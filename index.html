@@ -6,7 +6,7 @@
 <title>Pengumuman Hasil Babak Penyisihan KSNR SD 2026</title>
 
 <!-- Primary Meta Tags -->
-<meta name="title" content="Pengumuman Hasil KSNR SD 2026 - Cek Kelulusan Online">
+<meta name="title" content="Pengumuman Hasil KSNR SD 2026 - Cek Hasil Online">
 <meta name="description" content="Cek hasil pengumuman Kompetisi Sains Nalaria Realistik (KSNR) SD 2026 secara online. Masukkan nama peserta atau nama sekolah untuk melihat status kelolosan.">
 <meta name="keywords" content="KSNR 2026, hasil KSNR, pengumuman KSNR, KSNR SD, Kompetisi Sains Nalaria Realistik, KPM, lomba sains SD, cek hasil KSNR">
 <meta name="author" content="Panitia KSNR 2026 - Klinik Pendidikan MIPA">
@@ -21,7 +21,7 @@
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/">
-<meta property="og:title" content="Pengumuman Hasil KSNR SD 2026 - Cek Kelulusan Online">
+<meta property="og:title" content="Pengumuman Hasil KSNR SD 2026 - Cek Hasil Online">
 <meta property="og:description" content="Cek hasil Kompetisi Sains Nalaria Realistik (KSNR) 2026. Masukkan nama atau sekolah untuk melihat hasil.">
 <meta property="og:image" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/logo-ksnr8.png">
 <meta property="og:image:width" content="1200">
@@ -32,7 +32,7 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:url" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/">
-<meta name="twitter:title" content="Pengumuman Hasil KSNR SD 2026 - Cek Kelulusan Online">
+<meta name="twitter:title" content="Pengumuman Hasil KSNR SD 2026 - Cek Hasil Online">
 <meta name="twitter:description" content="Cek hasil Kompetisi Sains Nalaria Realistik (KSNR) 2026 secara online.">
 <meta name="twitter:image" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/logo-ksnr8.png">
 
@@ -386,7 +386,7 @@
     0%{opacity:0; transform:scale(.6) rotate(-8deg);}
     100%{opacity:1; transform:scale(1) rotate(0deg);}
   }
-  .seal.lulus{background:var(--blue-600);}
+  .seal.lolos{background:var(--blue-600);}
   .seal.tidak{background:rgba(255,255,255,.1); border:1.4px solid rgba(255,255,255,.35);}
   .seal .seal-icon{width:26px;height:26px;border-radius:50%; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center;}
   .seal .seal-label{color:var(--white); font-weight:800; font-size:13.5px; letter-spacing:.03em;}
@@ -692,13 +692,11 @@
   </footer>
 
 <script>
-  // Data contoh — ganti array ini dengan data peserta KSNR sesungguhnya.
-  // "no" boleh dikosongkan ("") jika file pengumuman resmi tidak mencantumkan ID peserta.
-  const DATA_PESERTA = [
-    { no:"KSNR-2601045", nama:"Ahmad Fauzan Ramadhan", sekolah:"SDN 01 Pare", status:"LULUS", nilai:92, peringkat:"3 Nasional", bidang:"Sains Nalaria" },
-    { no:"KSNR-2601102", nama:"Naila Az-Zahra", sekolah:"SD Islam Terpadu Cahaya", status:"LULUS", nilai:88, peringkat:"7 Nasional", bidang:"Sains Realistik" },
-    { no:"", nama:"Bagas Wicaksono", sekolah:"SDN Kediri 3", status:"TIDAK_LULUS", nilai:64, peringkat:"-", bidang:"Sains Nalaria" }
-  ];
+  // ===== KONFIGURASI =====
+  const DATA_URL = 'data/peserta.json';
+  let DATA_PESERTA = [];
+  let isDataLoaded = false;
+  let currentMode = 'nama';
 
   const form = document.getElementById('lookupForm');
   const resultCard = document.getElementById('resultCard');
@@ -709,8 +707,8 @@
   const searchInput = document.getElementById('searchInput');
   const searchLabel = document.getElementById('searchLabel');
   const searchHint = document.getElementById('searchHint');
-
-  let currentMode = 'nama';
+  const lockedBanner = document.querySelector('.locked-banner');
+  const lockedTag = document.querySelector('.locked-tag');
 
   const MODE_COPY = {
     nama: {
@@ -725,6 +723,76 @@
     }
   };
 
+  // ===== UTIL: escape HTML supaya aman dari XSS =====
+  function escapeHtml(str){
+    return String(str ?? '').replace(/[&<>"']/g, ch => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[ch]));
+  }
+
+  // ===== UTIL: normalisasi teks untuk pencarian =====
+  function normalizeText(text){
+    return String(text ?? '')
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/\s+/g, ' ')
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+      .trim();
+  }
+
+  // ===== VALIDASI INPUT =====
+  function validateInput(query){
+    if(query.length < 2){
+      return { valid:false, message: currentMode === 'nama'
+        ? 'Masukkan nama peserta untuk mulai mencari hasil.'
+        : 'Masukkan nama sekolah untuk melihat peserta yang lolos.' };
+    }
+    if(/[<>{}[\]\\]/.test(query)){
+      return { valid:false, message:'Input mengandung karakter yang tidak valid.' };
+    }
+    return { valid:true };
+  }
+
+  // ===== LOAD DATA DARI data/peserta.json =====
+  async function loadData(){
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Memuat data…';
+
+    try{
+      const response = await fetch(DATA_URL, { cache:'no-store' });
+      if(!response.ok) throw new Error('HTTP ' + response.status);
+
+      const raw = await response.json();
+      DATA_PESERTA = Array.isArray(raw) ? raw : (raw.data || []);
+
+      if(DATA_PESERTA.length === 0){
+        throw new Error('Data belum tersedia dari panitia');
+      }
+
+      isDataLoaded = true;
+
+      // Buka kunci form
+      form.classList.remove('is-locked');
+      modeSwitch.classList.remove('is-locked');
+      [modeNamaBtn, modeSekolahBtn, searchInput, submitBtn].forEach(el => el.disabled = false);
+      lockedBanner.style.display = 'none';
+      lockedTag.textContent = 'Aktif';
+      lockedTag.style.background = '#DFF3E3';
+      lockedTag.style.color = '#1B7A3D';
+
+      submitBtn.innerHTML = `Cari Hasil Sekarang
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+    }catch(err){
+      // Tetap terkunci — tampilkan pesan menunggu file resmi
+      isDataLoaded = false;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Menunggu File Resmi';
+      console.warn('Data peserta belum dimuat:', err.message);
+    }
+  }
+
+  // ===== MODE SWITCH =====
   function setMode(mode){
     currentMode = mode;
     modeSwitch.setAttribute('data-mode', mode);
@@ -738,10 +806,10 @@
     resultCard.className = 'result-card';
     resultCard.innerHTML = '';
   }
-
   modeNamaBtn.addEventListener('click', ()=> setMode('nama'));
   modeSekolahBtn.addEventListener('click', ()=> setMode('sekolah'));
 
+  // ===== ICONS =====
   function iconCheck(color){
     return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
@@ -752,65 +820,107 @@
     return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="1.8"/><path d="M12 11v5.5M12 8v.01" stroke="${color}" stroke-width="1.8" stroke-linecap="round"/></svg>`;
   }
   function initials(nama){
-    return nama.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    return String(nama).split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
   }
 
+  // ===== RENDER KARTU HASIL (nilai di-escape supaya aman dari XSS) =====
   function renderResultCard(found){
-    const lulus = found.status === 'LULUS';
-    const idLabel = found.no ? `No. ${found.no}` : 'ID belum tersedia di file resmi';
+    const lolos = found.status === 'LOLOS';
+    const idLabel = found.no ? `No. ${escapeHtml(found.no)}` : 'ID belum tersedia di file resmi';
     return `
       <div class="result-top">
         <div class="who">
-          <div class="avatar-ring">${initials(found.nama)}</div>
+          <div class="avatar-ring">${escapeHtml(initials(found.nama))}</div>
           <div>
-            <p class="name">${found.nama}</p>
-            <p class="sub">${found.sekolah} · ${idLabel}</p>
+            <p class="name">${escapeHtml(found.nama)}</p>
+            <p class="sub">${escapeHtml(found.sekolah)} · ${idLabel}</p>
           </div>
         </div>
-        <div class="seal ${lulus ? 'lulus' : 'tidak'}">
-          <span class="seal-icon">${lulus ? iconCheck('#fff') : iconStar('#fff')}</span>
-          <span class="seal-label">${lulus ? 'DINYATAKAN LULUS' : 'BELUM LULUS TAHAP INI'}</span>
+        <div class="seal ${lolos ? 'lolos' : 'tidak'}">
+          <span class="seal-icon">${lolos ? iconCheck('#fff') : iconStar('#fff')}</span>
+          <span class="seal-label">${lolos ? 'DINYATAKAN LOLOS' : 'BELUM LOLOS TAHAP INI'}</span>
         </div>
       </div>
       <div class="result-body">
         <div class="result-grid">
           <div class="stat-box">
             <p class="label">Bidang Lomba</p>
-            <p class="value">${found.bidang}</p>
+            <p class="value">${escapeHtml(found.bidang)}</p>
           </div>
           <div class="stat-box">
             <p class="label">Nilai Akhir</p>
-            <p class="value">${found.nilai} <small>/ 100</small></p>
+            <p class="value">${escapeHtml(found.nilai)} <small>/ 100</small></p>
           </div>
           <div class="stat-box">
             <p class="label">Peringkat</p>
-            <p class="value">${found.peringkat === '-' ? '—' : 'Peringkat ' + found.peringkat}</p>
+            <p class="value">${found.peringkat === '-' ? '—' : 'Peringkat ' + escapeHtml(found.peringkat)}</p>
           </div>
         </div>
         <div class="result-note">
           <div class="icon-box">
             ${iconInfo('#0B4F9C')}
           </div>
-          <p>${lulus
+          <p>${lolos
             ? 'Selamat! Kamu berhak melanjutkan ke tahap berikutnya. Informasi jadwal dan berkas lanjutan akan dikirim melalui sekolah masing-masing.'
             : 'Terima kasih atas usaha dan semangatmu mengikuti kompetisi ini. Tetap berlatih, ya — masih banyak kesempatan lomba lain di depan!'}</p>
         </div>
       </div>`;
   }
 
-  function renderSchoolSummary(sekolahInput, lulusList){
+  function renderSchoolSummary(sekolahInput, lolosList){
     const header = `
       <div class="result-not-found" style="text-align:left; padding:28px 32px 6px;">
         <p style="margin:0 0 4px; font-size:12.5px; font-weight:700; color:var(--blue-600); text-transform:uppercase; letter-spacing:.06em;">Hasil pencarian sekolah</p>
-        <h3 style="margin:0; text-align:left;">${lulusList.length} peserta lolos dari "${sekolahInput}"</h3>
+        <h3 style="margin:0; text-align:left;">${lolosList.length} peserta lolos dari "${escapeHtml(sekolahInput)}"</h3>
       </div>`;
-    const cards = lulusList.map(renderResultCard).join('<div style="height:16px;"></div>');
+    const cards = lolosList.map(renderResultCard).join('<div style="height:16px;"></div>');
     return header + `<div style="padding:18px 32px 32px;">${cards}</div>`;
   }
 
+  // ===== PENCARIAN (normalized substring match — akurat, tanpa fuzzy) =====
+  function cariPeserta(query, mode){
+    const q = normalizeText(query);
+
+    if(mode === 'nama'){
+      const matches = DATA_PESERTA.filter(p => normalizeText(p.nama).includes(q));
+      // Urutkan: LOLOS dulu, lalu alfabetis
+      matches.sort((a,b)=>{
+        if(a.status === 'LOLOS' && b.status !== 'LOLOS') return -1;
+        if(a.status !== 'LOLOS' && b.status === 'LOLOS') return 1;
+        return String(a.nama).localeCompare(String(b.nama));
+      });
+      return matches;
+    }
+
+    // mode sekolah — hanya peserta LOLOS
+    const matches = DATA_PESERTA.filter(p => normalizeText(p.sekolah).includes(q) && p.status === 'LOLOS');
+    matches.sort((a,b)=>{
+      const rankA = parseInt(a.peringkat, 10); const rankB = parseInt(b.peringkat, 10);
+      const ra = isNaN(rankA) ? 999 : rankA;
+      const rb = isNaN(rankB) ? 999 : rankB;
+      return ra - rb;
+    });
+    return matches;
+  }
+
+  // ===== SUBMIT HANDLER =====
   form.addEventListener('submit', function(e){
     e.preventDefault();
-    const query = searchInput.value.trim().toLowerCase();
+
+    if(!isDataLoaded){
+      resultCard.className = 'result-card show';
+      resultCard.innerHTML = `
+        <div class="result-not-found">
+          <div class="icon-box">${iconInfo('#0B4F9C')}</div>
+          <h3>Data Belum Tersedia</h3>
+          <p>Panitia belum merilis file hasil resmi. Silakan pantau halaman ini secara berkala.</p>
+        </div>`;
+      resultCard.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+
+    const rawQuery = searchInput.value.trim();
+    const validation = validateInput(rawQuery);
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Mencari data…';
@@ -820,61 +930,47 @@
       submitBtn.innerHTML = `Cari Hasil Sekarang
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-      if(!query){
+      if(!validation.valid){
         resultCard.className = 'result-card show';
         resultCard.innerHTML = `
           <div class="result-not-found">
             <div class="icon-box">${iconInfo('#0B4F9C')}</div>
             <h3>Isi Data Pencarian</h3>
-            <p>${currentMode === 'nama' ? 'Masukkan nama peserta untuk mulai mencari hasil.' : 'Masukkan nama sekolah untuk melihat peserta yang lolos.'}</p>
+            <p>${escapeHtml(validation.message)}</p>
           </div>`;
         resultCard.scrollIntoView({behavior:'smooth', block:'center'});
         return;
       }
 
-      if(currentMode === 'nama'){
-        const matches = DATA_PESERTA.filter(p => p.nama.toLowerCase().includes(query));
+      const results = cariPeserta(rawQuery, currentMode);
 
-        if(matches.length === 0){
-          resultCard.className = 'result-card show';
-          resultCard.innerHTML = `
-            <div class="result-not-found">
+      if(results.length === 0){
+        resultCard.className = 'result-card show';
+        resultCard.innerHTML = currentMode === 'nama'
+          ? `<div class="result-not-found">
               <div class="icon-box">${iconInfo('#0B4F9C')}</div>
               <h3>Data Belum Ditemukan</h3>
               <p>Periksa kembali ejaan nama peserta yang kamu masukkan. Jika data tetap tidak ditemukan, hubungi panitia melalui kontak resmi.</p>
+            </div>`
+          : `<div class="result-not-found">
+              <div class="icon-box">${iconInfo('#0B4F9C')}</div>
+              <h3>Belum Ada Peserta yang Lolos</h3>
+              <p>Tidak ada peserta dari sekolah "${escapeHtml(rawQuery)}" yang dinyatakan lolos pada tahap ini. Periksa kembali ejaan nama sekolah, atau coba cari berdasarkan nama peserta.</p>
             </div>`;
-          resultCard.scrollIntoView({behavior:'smooth', block:'center'});
-          return;
-        }
-
-        resultCard.className = 'result-card show';
-        resultCard.innerHTML = matches.map(renderResultCard).join('<div style="height:16px;"></div>');
-        resultCard.scrollIntoView({behavior:'smooth', block:'center'});
-        return;
-      }
-
-      // Mode: sekolah — hanya tampilkan peserta yang LULUS dari sekolah tersebut
-      const sekolahMatches = DATA_PESERTA.filter(p =>
-        p.sekolah.toLowerCase().includes(query) && p.status === 'LULUS'
-      );
-
-      if(sekolahMatches.length === 0){
-        resultCard.className = 'result-card show';
-        resultCard.innerHTML = `
-          <div class="result-not-found">
-            <div class="icon-box">${iconInfo('#0B4F9C')}</div>
-            <h3>Belum Ada Peserta yang Lolos</h3>
-            <p>Tidak ada peserta dari sekolah "${searchInput.value.trim()}" yang dinyatakan lolos pada tahap ini. Periksa kembali ejaan nama sekolah, atau coba cari berdasarkan nama peserta.</p>
-          </div>`;
         resultCard.scrollIntoView({behavior:'smooth', block:'center'});
         return;
       }
 
       resultCard.className = 'result-card show';
-      resultCard.innerHTML = renderSchoolSummary(searchInput.value.trim(), sekolahMatches);
+      resultCard.innerHTML = currentMode === 'nama'
+        ? results.map(renderResultCard).join('<div style="height:16px;"></div>')
+        : renderSchoolSummary(rawQuery, results);
       resultCard.scrollIntoView({behavior:'smooth', block:'center'});
     }, 700);
   });
+
+  // ===== INIT =====
+  loadData();
 </script>
 </body>
 </html>

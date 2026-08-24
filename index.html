@@ -209,7 +209,7 @@
   .hero-meta .item{display:flex; align-items:center; gap:9px;}
   .hero-meta .item span{font-size:13.5px; color:var(--ink-soft); font-weight:500;}
 
-  /* base icon chip — context rules below only override size/color when needed */
+  /* base icon chip */
   .icon-box{
     width:42px;height:42px;border-radius:12px; background:var(--blue-100);
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
@@ -347,7 +347,7 @@
   /* ===== Result reveal ===== */
   .result-wrap{max-width:1120px; margin:26px auto 0; padding:0 24px;}
   
-  /* Container utama (tidak memakai styling kartu langsung karena digunakan untuk wadah multiple cards) */
+  /* Container utama wadah multiple cards */
   .result-card-container{
     display:none;
     padding:0; overflow:visible;
@@ -385,8 +385,19 @@
     0%{opacity:0; transform:scale(.6) rotate(-8deg);}
     100%{opacity:1; transform:scale(1) rotate(0deg);}
   }
-  .seal.lolos{background:var(--blue-600);}
-  .seal.tidak{background:rgba(255,255,255,.1); border:1.4px solid rgba(255,255,255,.35);}
+  
+  /* WARNA SEMANTIK BARU UNTUK STATUS */
+  .seal.lolos {
+    background: #10B981; 
+    box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.45);
+    border: 1px solid #34D399;
+  }
+  .seal.tidak {
+    background: #F43F5E; 
+    box-shadow: 0 4px 14px -3px rgba(244, 63, 94, 0.45);
+    border: 1px solid #FB7185;
+  }
+  
   .seal .seal-icon{width:26px;height:26px;border-radius:50%; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center;}
   .seal .seal-label{color:var(--white); font-weight:800; font-size:13.5px; letter-spacing:.03em;}
 
@@ -397,7 +408,6 @@
     padding:16px 18px; display:flex; gap:12px; align-items:flex-start;
   }
   .result-note p{margin:0; font-size:13.5px; line-height:1.6; color:var(--blue-950);}
-  .result-note .icon-box{width:36px;height:36px;border-radius:10px; background:var(--white);}
 
   .result-not-found{
     padding:34px 32px; text-align:center;
@@ -819,8 +829,8 @@
   function iconCheck(color){
     return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
-  function iconStar(color){
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 6 6.4.5-4.9 4.3 1.6 6.2L12 16.9 6.3 20l1.6-6.2L3 9.5l6.4-.5L12 3Z" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+  function iconCross(color){
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
   function iconInfo(color){
     return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="1.8"/><path d="M12 11v5.5M12 8v.01" stroke="${color}" stroke-width="1.8" stroke-linecap="round"/></svg>`;
@@ -842,10 +852,15 @@
     `;
   }
 
-  // ===== RENDER KARTU HASIL (nilai di-escape supaya aman dari XSS) =====
+  // ===== RENDER KARTU HASIL =====
   function renderResultCard(found){
     const lolos = found.status === 'LOLOS';
     const idLabel = found.no ? `No. ${escapeHtml(found.no)}` : 'ID belum tersedia';
+    
+    // Tentukan tema warna kotak pesan bawah berdasarkan status
+    const noteBg = lolos ? '#ECFDF5' : '#FFF1F2'; // Hijau muda soft / Merah muda soft
+    const noteBorder = lolos ? '#A7F3D0' : '#FECDD3';
+    const iconColor = lolos ? '#10B981' : '#F43F5E';
     
     return `
     <div style="background:var(--white); border-radius:var(--radius-lg); border:1px solid var(--blue-100); box-shadow:var(--shadow-card); overflow:hidden; margin-bottom: 24px;">
@@ -858,16 +873,16 @@
           </div>
         </div>
         <div class="seal ${lolos ? 'lolos' : 'tidak'}">
-          <span class="seal-icon">${lolos ? iconCheck('#fff') : iconStar('#fff')}</span>
+          <span class="seal-icon">${lolos ? iconCheck('#fff') : iconCross('#fff')}</span>
           <span class="seal-label">${lolos ? 'DINYATAKAN LOLOS' : 'BELUM LOLOS TAHAP INI'}</span>
         </div>
       </div>
       <div class="result-body" style="padding-top: 24px;">
-        <div class="result-note">
-          <div class="icon-box" style="background:var(--white); width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-            ${iconInfo('#0B4F9C')}
+        <div class="result-note" style="background: ${noteBg}; border: 1px solid ${noteBorder};">
+          <div class="icon-box" style="background:var(--white); width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            ${iconInfo(iconColor)}
           </div>
-          <p>${lolos
+          <p style="color:var(--ink);">${lolos
             ? 'Selamat! Kamu berhak melanjutkan ke tahap berikutnya. Informasi jadwal dan berkas lanjutan akan dikirim melalui sekolah masing-masing.'
             : 'Terima kasih atas usaha dan semangatmu mengikuti kompetisi ini. Tetap berlatih, ya — masih banyak kesempatan lomba lain di depan!'}</p>
         </div>

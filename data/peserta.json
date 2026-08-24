@@ -1,23 +1,49 @@
 {
   "metadata": {
     "nama_event": "KSNR 8 2026 - Babak Penyisihan",
-    "tanggal_pengumuman": "",
-    "total_peserta": 0,
-    "total_lolos": 0,
-    "versi_data": "0.0.0",
-    "last_updated": "",
+    "tanggal_pengumuman": "2026-10-25",
+    "total_peserta": 399,
+    "total_lolos": 3,
+    "versi_data": "1.0.0",
+    "last_updated": "2026-08-24",
     "sumber": "Panitia KSNR 2026 - Klinik Pendidikan MIPA",
-    "catatan": "File ini masih kosong. Isi array 'data' di bawah dengan hasil resmi babak penyisihan (gabungan daftar peserta + status LOLOS/TIDAK_LOLOS) setelah panitia menerima file dari KPM. Contoh satu baris data ada di 'contoh_baris' sebagai referensi format — hapus setelah data asli dimasukkan."
+    "catatan": "Sebagian data riil dari Blitar dengan status kelulusan simulasi untuk tes UI"
   },
-  "contoh_baris": {
-    "no": "41020001",
-    "nama": "Halwa Isywara Wijadmiko",
-    "sekolah": "SDIT Al Hikmah Bence Blitar",
-    "kota": "Blitar",
-    "status": "LOLOS",
-    "nilai": 92,
-    "peringkat": "3 Nasional",
-    "bidang": "Sains Nalaria"
-  },
-  "data": []
+  "data": [
+    {
+      "no": "41020001",
+      "nama": "HALWA ISYWARA WIJADMIKO",
+      "sekolah": "SDIT AL HIKMAH BENCE BLITAR",
+      "kota": "BLITAR",
+      "status": "TIDAK LOLOS"
+    },
+    {
+      "no": "41020002",
+      "nama": "BERIL XAQUILA",
+      "sekolah": "SDIT AL HIKMAH BENCE BLITAR",
+      "kota": "BLITAR",
+      "status": "LOLOS"
+    },
+    {
+      "no": "41020003",
+      "nama": "BILQIS MAULIDA ZENDINAN",
+      "sekolah": "SDIT AL HIKMAH BENCE BLITAR",
+      "kota": "BLITAR",
+      "status": "TIDAK LOLOS"
+    },
+    {
+      "no": "41020026",
+      "nama": "ATHARVA FERLANDO HARYUNANTO",
+      "sekolah": "UPT SDN SRENGAT 01 BLITAR",
+      "kota": "BLITAR",
+      "status": "LOLOS"
+    },
+    {
+      "no": "41020027",
+      "nama": "NARENDRA BEDJOE DANISWARA",
+      "sekolah": "UPT SDN SRENGAT 01 BLITAR",
+      "kota": "BLITAR",
+      "status": "LOLOS"
+    }
+  ]
 }

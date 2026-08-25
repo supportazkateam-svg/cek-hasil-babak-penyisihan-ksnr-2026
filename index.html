@@ -15,71 +15,6 @@
 <meta name="geo.region" content="ID">
 <meta name="geo.placename" content="Indonesia">
 
-<!-- Canonical -->
-<link rel="canonical" href="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/">
-
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/">
-<meta property="og:title" content="Pengumuman Hasil KSNR SD 2026 - Cek Hasil Online">
-<meta property="og:description" content="Cek hasil Kompetisi Sains Nalaria Realistik (KSNR) 2026. Masukkan nama atau sekolah untuk melihat hasil.">
-<meta property="og:image" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/logo-ksnr8.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:site_name" content="Panitia KSNR 2026">
-<meta property="og:locale" content="id_ID">
-
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:url" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/">
-<meta name="twitter:title" content="Pengumuman Hasil KSNR SD 2026 - Cek Hasil Online">
-<meta name="twitter:description" content="Cek hasil Kompetisi Sains Nalaria Realistik (KSNR) 2026 secara online.">
-<meta name="twitter:image" content="https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/logo-ksnr8.png">
-
-<!-- Structured Data: Event -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Event",
-  "name": "Kompetisi Sains Nalaria Realistik (KSNR) 2026",
-  "description": "Kompetisi sains untuk siswa SD se-Indonesia diselenggarakan oleh Klinik Pendidikan MIPA (KPM).",
-  "startDate": "2026-08-23",
-  "endDate": "2026-10-25",
-  "eventStatus": "https://schema.org/EventScheduled",
-  "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-  "organizer": {
-    "@type": "Organization",
-    "name": "Klinik Pendidikan MIPA (KPM)",
-    "url": "https://cek-hasil-babak-penyisihan-ksnr-2026.vercel.app/",
-    "email": "kpm.informasilomba@gmail.com",
-    "telephone": "+6281221992354"
-  }
-}
-</script>
-
-<!-- Structured Data: FAQ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [{
-    "@type": "Question",
-    "name": "Bagaimana cara cek hasil KSNR 2026?",
-    "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "Pilih mode pencarian Nama Peserta atau Nama Sekolah pada halaman ini, masukkan datanya, lalu tekan tombol cari."
-    }
-  }, {
-    "@type": "Question",
-    "name": "Kapan pengumuman hasil KSNR 2026?",
-    "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "Pengumuman hasil babak penyisihan KSNR 2026 akan dirilis setelah panitia menerima file resmi dari KPM."
-    }
-  }]
-}
-</script>
-
 <link rel="preload" as="image" href="logo-ksnr8.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -110,6 +45,7 @@
   html{scroll-behavior:smooth; overflow-x:hidden;}
   body{
     margin:0;
+    padding-top: 78px; /* Mencegah konten tertutup header fixed */
     font-family:'Inter',sans-serif;
     color:var(--ink);
     background:var(--blue-50);
@@ -149,16 +85,19 @@
 
   /* ===== Header (Liquid Glass Floating effect) ===== */
   header {
-    position: sticky; top: 0; z-index: 50;
+    position: fixed; 
+    top: 0; left: 0; right: 0;
+    z-index: 999;
     background: var(--white);
     border-bottom: 1px solid var(--blue-100);
-    transition: background 0.4s ease, border-color 0.4s ease, padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .header-inner {
     max-width: 1120px; margin: 0 auto;
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 24px;
     border: 1px solid transparent;
+    border-radius: 0px;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .brand {display:flex; align-items:center; gap:16px;}
@@ -190,8 +129,12 @@
     background: transparent;
     border-bottom-color: transparent;
     padding-top: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    pointer-events: none; /* Klik bisa tembus area kosong di luar kapsul */
   }
   header.is-scrolled .header-inner {
+    pointer-events: auto; /* Mengaktifkan kembali klik pada kapsul */
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -199,9 +142,10 @@
     box-shadow: 0 12px 34px -12px rgba(5, 34, 64, 0.18), inset 0 1px 1px rgba(255, 255, 255, 1);
     border-radius: 100px;
     padding: 8px 24px;
+    max-width: 1040px; /* Menyusut sedikit ke tengah */
   }
   header.is-scrolled .brand-logo {
-    height: 44px;
+    height: 42px; /* Logo mengecil proporsional */
   }
 
   /* ===== Hero ===== */
@@ -1010,6 +954,7 @@
   // ===== HEADER FLOATING GLASS EFFECT =====
   const headerEl = document.querySelector('header');
   window.addEventListener('scroll', () => {
+    // Aktifkan mode kapsul jika layar di-scroll lebih dari 20 pixel
     if (window.scrollY > 20) {
       headerEl.classList.add('is-scrolled');
     } else {

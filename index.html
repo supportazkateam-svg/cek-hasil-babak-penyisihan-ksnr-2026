@@ -131,10 +131,10 @@
     padding-top: 16px;
     padding-left: 16px;
     padding-right: 16px;
-    pointer-events: none; /* Klik bisa tembus area kosong di luar kapsul */
+    pointer-events: none;
   }
   header.is-scrolled .header-inner {
-    pointer-events: auto; /* Mengaktifkan kembali klik pada kapsul */
+    pointer-events: auto;
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -142,10 +142,10 @@
     box-shadow: 0 12px 34px -12px rgba(5, 34, 64, 0.18), inset 0 1px 1px rgba(255, 255, 255, 1);
     border-radius: 100px;
     padding: 8px 24px;
-    max-width: 1040px; /* Menyusut sedikit ke tengah */
+    max-width: 1040px;
   }
   header.is-scrolled .brand-logo {
-    height: 42px; /* Logo mengecil proporsional */
+    height: 42px;
   }
 
   /* ===== Hero ===== */
@@ -316,7 +316,6 @@
   /* ===== Result reveal ===== */
   .result-wrap{max-width:1120px; margin:26px auto 0; padding:0 24px;}
   
-  /* Container utama wadah multiple cards */
   .result-card-container{
     display:none;
     padding:0; overflow:visible;
@@ -355,7 +354,6 @@
     100%{opacity:1; transform:scale(1) rotate(0deg);}
   }
   
-  /* WARNA SEMANTIK BARU UNTUK STATUS */
   .seal.lolos {
     background: #10B981; 
     box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.45);
@@ -530,7 +528,7 @@
         </div>
         <div>
           <p class="locked-title">Pencarian belum dapat digunakan</p>
-          <p class="locked-desc">Panitia KPM belum menerima file pengumuman hasil resmi KSNR 2026. Fitur ini akan otomatis aktif begitu data sudah tersedia — pantau halaman ini secara berkala.</p>
+          <p class="locked-desc">Berdasarkan informasi resmi dari pusat, fitur pencarian direncanakan akan dibuka pada hari <strong>Jumat, 11 September 2026</strong>. Harap pantau halaman ini secara berkala.</p>
         </div>
       </div>
 
@@ -613,18 +611,18 @@
       </div>
       <div class="tl-item">
         <p class="tl-index">TAHAP 02</p>
+        <p class="tl-date">11 Sep 2026</p>
+        <p class="tl-desc">Pengumuman hasil penyisihan</p>
+      </div>
+      <div class="tl-item">
+        <p class="tl-index">TAHAP 03</p>
         <p class="tl-date">20 Sep 2026</p>
         <p class="tl-desc">Babak semifinal KSNR</p>
       </div>
       <div class="tl-item">
-        <p class="tl-index">TAHAP 03</p>
+        <p class="tl-index">TAHAP 04</p>
         <p class="tl-date">18 Okt 2026</p>
         <p class="tl-desc">Babak final KSNR</p>
-      </div>
-      <div class="tl-item">
-        <p class="tl-index">TAHAP 04</p>
-        <p class="tl-date">25 Okt 2026</p>
-        <p class="tl-desc">Pengumuman hasil &amp; batas sanggahan</p>
       </div>
     </div>
   </section>

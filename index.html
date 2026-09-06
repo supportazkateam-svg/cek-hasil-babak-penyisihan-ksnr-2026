@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
   :root{
     --blue-950:#052240;
@@ -34,6 +35,8 @@
     --ink:#0E2540;
     --ink-soft:#4C6584;
     --ink-faint:#8AA1BC;
+    --emerald-500:#10B981;
+    --emerald-100:#D1FAE5;
     --radius-lg:26px;
     --radius-md:16px;
     --radius-sm:10px;
@@ -45,7 +48,7 @@
   html{scroll-behavior:smooth; overflow-x:hidden;}
   body{
     margin:0;
-    padding-top: 78px; /* Mencegah konten tertutup header fixed */
+    padding-top: 78px;
     font-family:'Inter',sans-serif;
     color:var(--ink);
     background:var(--blue-50);
@@ -60,7 +63,7 @@
   button{font-family:inherit;}
   img,svg{display:block;}
 
-  /* ===== Background texture: layered, restrained ===== */
+  /* ===== Background texture ===== */
   .page-bg{
     position:relative;
   }
@@ -83,7 +86,7 @@
     pointer-events:none;
   }
 
-  /* ===== Header (Liquid Glass Floating effect) ===== */
+  /* ===== Header ===== */
   header {
     position: fixed; 
     top: 0; left: 0; right: 0;
@@ -124,7 +127,6 @@
   nav.top-nav a:hover {background:var(--blue-50); color:var(--blue-800);}
   nav.top-nav a.active {background:var(--blue-800); color:var(--white);}
 
-  /* Mode Kapsul Liquid Glass (Saat Di-scroll) */
   header.is-scrolled {
     background: transparent;
     border-bottom-color: transparent;
@@ -135,7 +137,7 @@
   }
   header.is-scrolled .header-inner {
     pointer-events: auto;
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.8);
@@ -159,8 +161,22 @@
     background:var(--blue-100); color:var(--blue-800);
     font-size:13px; font-weight:700; padding:7px 14px 7px 10px;
     border-radius:100px; margin-bottom:20px;
+    transition: all .3s ease;
   }
-  .status-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--blue-600); box-shadow:0 0 0 3px rgba(25,118,210,.18);}
+  .status-pill.active {
+    background: #D1FAE5;
+    color: #065F46;
+  }
+  .status-pill .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--blue-600);
+    box-shadow:0 0 0 3px rgba(25,118,210,.18);
+    transition: all .3s ease;
+  }
+  .status-pill.active .dot {
+    background: #10B981;
+    box-shadow: 0 0 0 3px rgba(16,185,129,.25);
+  }
 
   .hero-grid{
     display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center;
@@ -178,7 +194,6 @@
   .hero-meta .item{display:flex; align-items:center; gap:9px;}
   .hero-meta .item span{font-size:13.5px; color:var(--ink-soft); font-weight:500;}
 
-  /* base icon chip */
   .icon-box{
     width:42px;height:42px;border-radius:12px; background:var(--blue-100);
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
@@ -228,6 +243,7 @@
     background:var(--blue-100); color:var(--blue-800);
     font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
     padding:4px 10px; border-radius:100px;
+    transition:all .3s ease;
   }
 
   .locked-banner{
@@ -274,7 +290,6 @@
     font-size:13.5px; font-weight:700; color:var(--ink-soft);
     transition:color .25s ease;
   }
-  .mode-switch button.mode-opt svg{transition:opacity .25s ease;}
   .mode-switch button.mode-opt.is-active{color:var(--blue-800);}
   .mode-switch.is-locked{opacity:.55; filter:grayscale(.15); pointer-events:none;}
   .mode-switch button.mode-opt:disabled{cursor:not-allowed;}
@@ -367,21 +382,12 @@
   
   .seal .seal-icon{width:26px;height:26px;border-radius:50%; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center;}
   .seal .seal-label{color:var(--white); font-weight:800; font-size:13.5px; letter-spacing:.03em;}
-
   .result-body{padding:30px 32px 32px;}
-
   .result-note{
     background:var(--blue-100); border-radius:var(--radius-md);
     padding:16px 18px; display:flex; gap:12px; align-items:flex-start;
   }
   .result-note p{margin:0; font-size:13.5px; line-height:1.6; color:var(--blue-950);}
-
-  .result-not-found{
-    padding:34px 32px; text-align:center;
-  }
-  .result-not-found .icon-box{width:52px;height:52px; border-radius:15px; margin:0 auto 16px;}
-  .result-not-found h3{margin:0 0 8px; font-size:17px; color:var(--blue-950);}
-  .result-not-found p{margin:0; font-size:14px; color:var(--ink-soft); max-width:400px; margin:0 auto;}
 
   /* ===== Info section ===== */
   .info-section{max-width:1120px; margin:64px auto 0; padding:0 24px;}
@@ -402,7 +408,7 @@
   .info-card ol{margin:0; padding-left:18px; font-size:13.5px; line-height:1.85; color:var(--ink-soft);}
   .info-card ol li::marker{color:var(--blue-600); font-weight:700;}
 
-  /* ===== Timeline strip ===== */
+  /* ===== Timeline ===== */
   .timeline-section{max-width:1120px; margin:56px auto 0; padding:0 24px;}
   .timeline-card{
     background:var(--blue-900);
@@ -415,7 +421,7 @@
     border-radius:50%; border:38px solid rgba(255,255,255,.045);
   }
   .tl-item{position:relative; z-index:1;}
-  .tl-item .tl-index{font-size:12px; font-weight:800; color:var(--blue-300, #93c1f2); letter-spacing:.08em; margin:0 0 10px;}
+  .tl-item .tl-index{font-size:12px; font-weight:800; color:var(--blue-200); letter-spacing:.08em; margin:0 0 10px;}
   .tl-item .tl-date{color:var(--white); font-weight:800; font-size:15px; margin:0 0 4px;}
   .tl-item .tl-desc{color:var(--blue-200); font-size:12.5px; line-height:1.55; margin:0;}
   .tl-item:not(:last-child){border-right:1px solid rgba(255,255,255,.1); padding-right:18px;}
@@ -441,7 +447,153 @@
     padding-top:20px; font-size:12px; color:rgba(226,238,251,.55); flex-wrap:wrap; gap:10px;
   }
 
-  /* ===== responsive ===== */
+  /* ===== CUSTOM CELEBRATION MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(5, 34, 64, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .custom-modal {
+    background: var(--white);
+    max-width: 490px;
+    width: 100%;
+    border-radius: 28px;
+    box-shadow: 0 30px 60px -15px rgba(5, 34, 64, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    position: relative;
+    overflow: hidden;
+    transform: scale(0.92) translateY(24px);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+    padding: 36px 30px 30px;
+  }
+  .modal-overlay.active .custom-modal {
+    transform: scale(1) translateY(0);
+  }
+
+  .modal-top-accent {
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, #10B981, #3B8AE0, #0B4F9C);
+  }
+
+  .modal-close-btn {
+    position: absolute;
+    top: 18px; right: 18px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--blue-50);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--ink-soft);
+    transition: all 0.2s ease;
+  }
+  .modal-close-btn:hover {
+    background: var(--blue-100);
+    color: var(--blue-950);
+  }
+
+  .modal-badge-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 18px;
+  }
+
+  .modal-icon-badge {
+    width: 72px; height: 72px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #3B8AE0, #0B4F9C);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+    box-shadow: 0 12px 28px -6px rgba(11, 79, 156, 0.45);
+    color: var(--white);
+  }
+
+  .custom-modal h3 {
+    font-size: 25px;
+    font-weight: 800;
+    color: var(--blue-950);
+    margin: 0 0 10px;
+    line-height: 1.25;
+  }
+
+  .custom-modal p.modal-desc {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0 0 26px;
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-modal-action {
+    background: var(--blue-800);
+    color: var(--white);
+    border: none;
+    padding: 15px 24px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 10px 24px -8px rgba(11, 79, 156, 0.5);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .btn-modal-action:hover {
+    background: var(--blue-700);
+  }
+  .btn-modal-action:active {
+    transform: scale(0.98);
+  }
+
+  .btn-modal-ghost {
+    background: transparent;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-faint);
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.15s ease;
+  }
+  .btn-modal-ghost:hover {
+    color: var(--ink);
+  }
+
+  /* ===== Responsive ===== */
   @media (max-width:880px){
     nav.top-nav{display:none;}
     .hero-grid{grid-template-columns:1fr;}
@@ -456,6 +608,7 @@
 </head>
 <body class="page-bg">
 
+  <!-- Header -->
   <header>
     <div class="header-inner">
       <div class="brand">
@@ -475,24 +628,28 @@
     </div>
   </header>
 
+  <!-- Hero Section -->
   <section class="hero" id="beranda">
     <div class="hero-grid">
       <div>
-        <div class="status-pill"><span class="dot"></span> Menunggu file pengumuman resmi dari panitia</div>
+        <div class="status-pill" id="heroStatusPill">
+          <span class="dot"></span>
+          <span id="heroStatusText">Menunggu pengumuman resmi dari panitia</span>
+        </div>
         <h1>Hasil <span>Kompetisi Sains Nalaria Realistik</span> (KSNR) Tahun 2026</h1>
-        <p class="lead">Selamat kepada seluruh peserta yang telah mengikuti rangkaian seleksi dengan penuh semangat. Kompetisi dari Klinik Pendidikan MIPA (KPM) ini menguji kemampuan bernalar sains secara realistis. Cari hasil kamu dengan nama dan asal sekolah di bawah ini.</p>
+        <p class="lead">Selamat kepada seluruh peserta yang telah mengikuti babak penyisihan dengan penuh semangat. Cari hasil kamu menggunakan nama peserta atau nama asal sekolah di bawah ini.</p>
         <div class="hero-meta">
           <div class="item">
             <div class="icon-box">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" stroke="#0B4F9C" stroke-width="1.8" stroke-linejoin="round"/></svg>
             </div>
-            <span>Data terverifikasi panitia</span>
+            <span>Data Terverifikasi Panitia</span>
           </div>
           <div class="item">
             <div class="icon-box">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="#0B4F9C" stroke-width="1.8"/><path d="M3 10h18M8 3v4M16 3v4" stroke="#0B4F9C" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#0B4F9C" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="#0B4F9C" stroke-width="1.8" stroke-linecap="round"/></svg>
             </div>
-            <span>Terakhir diperiksa 23 Agustus 2026</span>
+            <span>Babak Penyisihan SD 2026</span>
           </div>
         </div>
       </div>
@@ -505,11 +662,12 @@
           <circle cx="70" cy="210" r="4" fill="#3B8AE0"/>
           <circle cx="215" cy="205" r="6" fill="#3B8AE0"/>
         </svg>
-        <img src="logo-ksnr8.png" alt="Logo KSNR 8 - Kompetisi Sains Nalaria Realistik Se-Indonesia" class="hero-logo">
+        <img src="logo-ksnr8.png" alt="Logo KSNR 8" class="hero-logo">
       </div>
     </div>
   </section>
 
+  <!-- Search Card -->
   <div class="lookup-wrap" id="cek-hasil">
     <div class="lookup-card">
       <div class="lookup-head">
@@ -517,21 +675,23 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 2 3 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 12l2 2 4.5-4.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div>
-          <h2>Cari Hasil Peserta <span class="locked-tag">Terkunci</span></h2>
-          <p>Pilih mode pencarian: cari berdasarkan nama peserta, atau cari berdasarkan nama sekolah untuk melihat siapa saja yang lolos dari sekolah tersebut.</p>
+          <h2>Cari Hasil Peserta <span class="locked-tag" id="statusTag">Terkunci</span></h2>
+          <p>Pilih mode pencarian: cari berdasarkan nama peserta, atau cari berdasarkan nama sekolah untuk melihat siapa saja yang lolos.</p>
         </div>
       </div>
 
-      <div class="locked-banner">
+      <!-- Banner Saat Terkunci -->
+      <div class="locked-banner" id="lockedBanner">
         <div class="icon-box">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#0B4F9C" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#0B4F9C" stroke-width="1.8" stroke-linecap="round"/></svg>
         </div>
         <div>
           <p class="locked-title">Pencarian belum dapat digunakan</p>
-          <p class="locked-desc">Berdasarkan informasi resmi dari pusat, fitur pencarian direncanakan akan dibuka pada hari <strong>Jumat, 11 September 2026</strong>. Harap pantau halaman ini secara berkala.</p>
+          <p class="locked-desc">Pengumuman resmi babak penyisihan KSNR SD 2026 sedang disiapkan oleh panitia pusat. Silakan pantau halaman ini secara berkala.</p>
         </div>
       </div>
 
+      <!-- Mode Switch -->
       <div class="mode-switch is-locked" id="modeSwitch" data-mode="nama">
         <div class="mode-thumb"></div>
         <button type="button" class="mode-opt is-active" id="modeNama" data-mode="nama" disabled>
@@ -544,6 +704,7 @@
         </button>
       </div>
 
+      <!-- Lookup Form -->
       <form class="lookup-form is-locked" id="lookupForm">
         <div class="field" style="grid-column:1 / -1;" id="searchFieldWrap">
           <label for="searchInput" id="searchLabel">Nama Peserta</label>
@@ -553,10 +714,10 @@
         <div class="lookup-actions">
           <span class="lookup-note">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8AA1BC" stroke-width="1.6"/><path d="M12 11v5M12 8v.01" stroke="#8AA1BC" stroke-width="1.6" stroke-linecap="round"/></svg>
-            Data diproses secara lokal dan tidak dibagikan ke pihak lain.
+            Data tersinkronisasi langsung dengan server resmi panitia KPM.
           </span>
           <button type="submit" class="btn-primary" id="submitBtn" disabled>
-            Menunggu File Resmi
+            Menunggu Rilis Resmi
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -564,10 +725,12 @@
     </div>
   </div>
 
+  <!-- Result Container -->
   <div class="result-wrap">
     <div class="result-card-container" id="resultCard"></div>
   </div>
 
+  <!-- Information Section -->
   <section class="info-section" id="info">
     <div class="section-head">
       <p class="eyebrow">Panduan</p>
@@ -581,7 +744,7 @@
         <h3>Cara Melihat Hasil</h3>
         <ol>
           <li>Pilih mode "Nama Peserta" atau "Nama Sekolah"</li>
-          <li>Ketik nama sesuai mode yang dipilih</li>
+          <li>Ketik nama dengan benar pada kolom pencarian</li>
           <li>Tekan tombol "Cari Hasil Sekarang"</li>
         </ol>
       </div>
@@ -590,43 +753,45 @@
           <svg width="42" height="42" viewBox="0 0 42 42" fill="none"><rect width="42" height="42" rx="12" fill="#E1EFFC"/><path d="M13 29V17l8-6 8 6v12" stroke="#0B4F9C" stroke-width="2" stroke-linejoin="round"/><path d="M17 29v-7h8v7" stroke="#0B4F9C" stroke-width="2"/></svg>
         </div>
         <h3>Jika Belum Ditemukan</h3>
-        <p>Periksa kembali ejaan nama dan nama sekolah. Jika data tetap tidak ditemukan, hubungi panitia melalui kontak resmi di bagian bawah halaman.</p>
+        <p>Pastikan ejaan nama atau sekolah sudah sesuai dengan formulir pendaftaran. Jika data tetap tidak muncul, silakan hubungi kontak panitia.</p>
       </div>
       <div class="info-card">
         <div class="icon-box">
           <svg width="42" height="42" viewBox="0 0 42 42" fill="none"><rect width="42" height="42" rx="12" fill="#E1EFFC"/><path d="M13 15h16M13 21h16M13 27h10" stroke="#0B4F9C" stroke-width="2" stroke-linecap="round"/></svg>
         </div>
         <h3>Keputusan Panitia</h3>
-        <p>Seluruh hasil bersifat final dan tidak dapat diganggu gugat. Sanggahan dapat diajukan paling lambat 3 hari setelah pengumuman melalui surel resmi panitia.</p>
+        <p>Seluruh hasil keputusan dewan juri dan panitia KPM bersifat final dan mengikat. Peserta yang lolos berhak maju ke babak semifinal.</p>
       </div>
     </div>
   </section>
 
+  <!-- Timeline Section -->
   <section class="timeline-section" id="jadwal">
     <div class="timeline-card">
       <div class="tl-item">
         <p class="tl-index">TAHAP 01</p>
-        <p class="tl-date">23 Agu 2026</p>
-        <p class="tl-desc">Babak penyisihan KSNR</p>
+        <p class="tl-date">Agustus 2026</p>
+        <p class="tl-desc">Babak penyisihan KSNR SD</p>
       </div>
       <div class="tl-item">
         <p class="tl-index">TAHAP 02</p>
-        <p class="tl-date">11 Sep 2026</p>
+        <p class="tl-date">September 2026</p>
         <p class="tl-desc">Pengumuman hasil penyisihan</p>
       </div>
       <div class="tl-item">
         <p class="tl-index">TAHAP 03</p>
-        <p class="tl-date">20 Sep 2026</p>
+        <p class="tl-date">Oktober 2026</p>
         <p class="tl-desc">Babak semifinal KSNR</p>
       </div>
       <div class="tl-item">
         <p class="tl-index">TAHAP 04</p>
-        <p class="tl-date">18 Okt 2026</p>
-        <p class="tl-desc">Babak final KSNR</p>
+        <p class="tl-date">November 2026</p>
+        <p class="tl-desc">Babak grand final KSNR</p>
       </div>
     </div>
   </section>
 
+  <!-- Footer -->
   <footer id="kontak">
     <div class="footer-inner">
       <div class="footer-top">
@@ -644,9 +809,9 @@
             <a href="tel:+6281221992354">0812-2199-2354</a>
           </div>
           <div>
-            <h4>Tautan</h4>
+            <h4>Tautan Cepat</h4>
             <a href="#cek-hasil">Cek Hasil</a>
-            <a href="#jadwal">Jadwal Lengkap</a>
+            <a href="#jadwal">Jadwal Lomba</a>
             <a href="#info">Panduan</a>
           </div>
         </div>
@@ -658,12 +823,40 @@
     </div>
   </footer>
 
+  <!-- CUSTOM CELEBRATION MODAL (SAKLAR ON) -->
+  <div class="modal-overlay" id="announcementModal">
+    <div class="custom-modal">
+      <div class="modal-top-accent"></div>
+      <button class="modal-close-btn" id="closeModalBtn" aria-label="Tutup modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+
+      <div class="modal-badge-chip">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#10B981"/></svg>
+        Pengumuman Resmi
+      </div>
+
+      <div class="modal-icon-badge">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+
+      <h3>Pengumuman Telah Tiba!</h3>
+      <p class="modal-desc">Segera cek hasil KSNR kamu sekarang! Masukkan nama peserta atau asal sekolahmu untuk melihat status kelolosan babak penyisihan.</p>
+
+      <div class="modal-actions">
+        <button class="btn-modal-action" id="modalActionBtn">
+          Cek Hasil Sekarang
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn-modal-ghost" id="modalDismissBtn">Nanti Saja</button>
+      </div>
+    </div>
+  </div>
+
 <script>
-  // ===== KONFIGURASI =====
-  const DATA_URL = 'data/peserta.json';
-  let DATA_PESERTA = [];
-  let isDataLoaded = false;
+  // ===== ELEMEN DOM =====
   let currentMode = 'nama';
+  let isSystemActive = false;
 
   const form = document.getElementById('lookupForm');
   const resultCard = document.getElementById('resultCard');
@@ -674,8 +867,16 @@
   const searchInput = document.getElementById('searchInput');
   const searchLabel = document.getElementById('searchLabel');
   const searchHint = document.getElementById('searchHint');
-  const lockedBanner = document.querySelector('.locked-banner');
-  const lockedTag = document.querySelector('.locked-tag');
+  const lockedBanner = document.getElementById('lockedBanner');
+  const statusTag = document.getElementById('statusTag');
+  const heroStatusPill = document.getElementById('heroStatusPill');
+  const heroStatusText = document.getElementById('heroStatusText');
+
+  // Modal Elemen
+  const announcementModal = document.getElementById('announcementModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const modalActionBtn = document.getElementById('modalActionBtn');
+  const modalDismissBtn = document.getElementById('modalDismissBtn');
 
   const MODE_COPY = {
     nama: {
@@ -690,90 +891,138 @@
     }
   };
 
-  // ===== UTIL: escape HTML supaya aman dari XSS =====
+  // ===== UTILITAS SANITASI XSS =====
   function escapeHtml(str){
     return String(str ?? '').replace(/[&<>"']/g, ch => ({
       '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
     }[ch]));
   }
 
-  // ===== UTIL: normalisasi teks untuk pencarian =====
-  function normalizeText(text){
-    return String(text ?? '')
-      .toLowerCase()
-      .normalize('NFKD')
-      .replace(/\s+/g, ' ')
-      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-      .trim();
+  function initials(nama){
+    return String(nama).split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  }
+
+  function iconCheck(color){
+    return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  function iconCross(color){
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  function iconInfo(color){
+    return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="1.8"/><path d="M12 11v5.5M12 8v.01" stroke="${color}" stroke-width="1.8" stroke-linecap="round"/></svg>`;
   }
 
   // ===== VALIDASI INPUT =====
   function validateInput(query){
     if(query.length < 2){
-      return { valid:false, message: currentMode === 'nama'
-        ? 'Masukkan nama peserta untuk mulai mencari hasil.'
-        : 'Masukkan nama sekolah untuk melihat peserta yang lolos.' };
+      return { 
+        valid: false, 
+        message: currentMode === 'nama'
+          ? 'Masukkan nama peserta untuk mulai mencari hasil.'
+          : 'Masukkan nama sekolah untuk melihat peserta yang lolos.' 
+      };
     }
     if(/[<>{}[\]\\]/.test(query)){
-      return { valid:false, message:'Input mengandung karakter yang tidak valid.' };
+      return { valid: false, message: 'Input mengandung karakter yang tidak valid.' };
     }
-    return { valid:true };
+    return { valid: true };
   }
 
-  // ===== LOAD DATA DARI data/peserta.json =====
-  async function loadData(){
+  // ===== CEK SAKLAR ON / OFF DARI SERVER =====
+  async function checkSwitchStatus() {
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Memuat data…';
+    submitBtn.textContent = 'Memeriksa status…';
 
-    try{
-      const response = await fetch(DATA_URL, { cache:'no-store' });
-      if(!response.ok) throw new Error('HTTP ' + response.status);
+    const isTesting = window.location.hash === '#tes-pencarian-hasil';
+    const testParam = isTesting ? '&test_key=panitiaksnr2026' : '';
 
-      const raw = await response.json();
-      DATA_PESERTA = Array.isArray(raw) ? raw : (raw.data || []);
+    try {
+      const response = await fetch(`/api/cari?check_status=true${testParam}`, { cache: 'no-store' });
+      const res = await response.json();
 
-      if(DATA_PESERTA.length === 0){
-        throw new Error('Data belum tersedia dari panitia');
+      isSystemActive = Boolean(res.is_active);
+
+      // Jika SAKLAR AKTIF (ON) atau MODE TES AKTIF
+      if (isSystemActive || isTesting) {
+        // Buka form UI
+        form.classList.remove('is-locked');
+        modeSwitch.classList.remove('is-locked');
+        [modeNamaBtn, modeSekolahBtn, searchInput, submitBtn].forEach(el => el.disabled = false);
+        lockedBanner.style.display = 'none';
+
+        // Update Tag Status
+        if (isTesting && !isSystemActive) {
+          statusTag.textContent = 'Mode Tes Panitia';
+          statusTag.style.background = '#FEF3C7';
+          statusTag.style.color = '#B45309';
+          heroStatusText.textContent = 'Mode pengujian internal aktif';
+        } else {
+          statusTag.textContent = 'Hasil Resmi Aktif';
+          statusTag.style.background = '#D1FAE5';
+          statusTag.style.color = '#065F46';
+          
+          heroStatusPill.classList.add('active');
+          heroStatusText.textContent = 'Pengumuman resmi telah dibuka!';
+
+          // Tampilkan Modal Sambutan jika baru pertama kali dibuka oleh user
+          triggerAnnouncementModal();
+        }
+
+        submitBtn.innerHTML = `Cari Hasil Sekarang
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      } else {
+        throw new Error('Sistem terkunci');
       }
 
-      // --- KODE BACKDOOR ---
-      if (window.location.hash !== '#tes-pencarian-hasil') {
-        throw new Error('Mode publik: UI masih dikunci.');
-      }
-
-      isDataLoaded = true;
-
-      // Buka kunci form
-      form.classList.remove('is-locked');
-      modeSwitch.classList.remove('is-locked');
-      [modeNamaBtn, modeSekolahBtn, searchInput, submitBtn].forEach(el => el.disabled = false);
-      lockedBanner.style.display = 'none';
-      lockedTag.textContent = 'Aktif (Mode Tes)';
-      lockedTag.style.background = '#DFF3E3';
-      lockedTag.style.color = '#1B7A3D';
-
-      submitBtn.innerHTML = `Cari Hasil Sekarang
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
-    }catch(err){
-      // Tetap terkunci — tampilkan pesan menunggu file resmi
-      isDataLoaded = false;
-      
+    } catch (err) {
+      // Kondisi SAKLAR OFF (Terkunci)
+      isSystemActive = false;
       form.classList.add('is-locked');
       modeSwitch.classList.add('is-locked');
       [modeNamaBtn, modeSekolahBtn, searchInput, submitBtn].forEach(el => el.disabled = true);
       lockedBanner.style.display = 'flex';
-      lockedTag.textContent = 'Terkunci';
-      lockedTag.style.background = 'var(--blue-100)';
-      lockedTag.style.color = 'var(--blue-800)';
       
-      submitBtn.textContent = 'Menunggu File Resmi';
-      console.warn('Status UI:', err.message);
+      statusTag.textContent = 'Terkunci';
+      statusTag.style.background = 'var(--blue-100)';
+      statusTag.style.color = 'var(--blue-800)';
+      
+      heroStatusPill.classList.remove('active');
+      heroStatusText.textContent = 'Menunggu pengumuman resmi dari panitia';
+      submitBtn.textContent = 'Menunggu Rilis Resmi';
     }
   }
+
+  // ===== KONTROL MODAL =====
+  function triggerAnnouncementModal() {
+    // Cek apakah pengunjung sudah pernah melihat modal di sesi browser ini
+    const alreadySeen = sessionStorage.getItem('ksnr_modal_seen_2026');
+    if (!alreadySeen) {
+      setTimeout(() => {
+        announcementModal.classList.add('active');
+      }, 500); // Delay halus setengah detik
+    }
+  }
+
+  function hideModal() {
+    announcementModal.classList.remove('active');
+    sessionStorage.setItem('ksnr_modal_seen_2026', 'true');
+  }
+
+  closeModalBtn.addEventListener('click', hideModal);
+  modalDismissBtn.addEventListener('click', hideModal);
   
-  // Dengarkan perubahan hash untuk buka tutup mode tes secara instan
-  window.addEventListener('hashchange', loadData);
+  // Tombol aksi pada modal: tutup modal, scroll ke form dan fokus ke input
+  modalActionBtn.addEventListener('click', () => {
+    hideModal();
+    const target = document.getElementById('cek-hasil');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => searchInput.focus(), 600);
+  });
+
+  // Tutup modal jika klik di luar box
+  announcementModal.addEventListener('click', (e) => {
+    if (e.target === announcementModal) hideModal();
+  });
 
   // ===== MODE SWITCH =====
   function setMode(mode){
@@ -792,21 +1041,7 @@
   modeNamaBtn.addEventListener('click', ()=> setMode('nama'));
   modeSekolahBtn.addEventListener('click', ()=> setMode('sekolah'));
 
-  // ===== ICONS =====
-  function iconCheck(color){
-    return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  }
-  function iconCross(color){
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  }
-  function iconInfo(color){
-    return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="1.8"/><path d="M12 11v5.5M12 8v.01" stroke="${color}" stroke-width="1.8" stroke-linecap="round"/></svg>`;
-  }
-  function initials(nama){
-    return String(nama).split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
-  }
-
-  // ===== RENDER TEMPLATE NOT FOUND =====
+  // ===== TEMPLATE KARTU HASIL =====
   function renderNotFound(title, message) {
     return `
     <div style="background:var(--white); border-radius:var(--radius-lg); border:1px solid var(--blue-100); box-shadow:var(--shadow-card); padding:34px 32px; text-align:center; margin-bottom: 24px;">
@@ -815,17 +1050,14 @@
       </div>
       <h3 style="margin:0 0 8px; font-size:17px; color:var(--blue-950);">${title}</h3>
       <p style="margin:0; font-size:14px; color:var(--ink-soft); max-width:400px; margin:0 auto;">${message}</p>
-    </div>
-    `;
+    </div>`;
   }
 
-  // ===== RENDER KARTU HASIL =====
   function renderResultCard(found){
-    const lolos = found.status === 'LOLOS';
-    const idLabel = found.no ? `No. ${escapeHtml(found.no)}` : 'ID belum tersedia';
+    const lolos = String(found.status || '').toUpperCase() === 'LOLOS';
+    const idLabel = found.no ? `No. ${escapeHtml(found.no)}` : 'Peserta KSNR SD';
     
-    // Tentukan tema warna kotak pesan bawah berdasarkan status
-    const noteBg = lolos ? '#ECFDF5' : '#FFF1F2'; // Hijau muda soft / Merah muda soft
+    const noteBg = lolos ? '#ECFDF5' : '#FFF1F2';
     const noteBorder = lolos ? '#A7F3D0' : '#FECDD3';
     const iconColor = lolos ? '#10B981' : '#F43F5E';
     
@@ -836,7 +1068,7 @@
           <div class="avatar-ring">${escapeHtml(initials(found.nama))}</div>
           <div>
             <p class="name">${escapeHtml(found.nama)}</p>
-            <p class="sub">${escapeHtml(found.sekolah)} · ${escapeHtml(found.kota)} · ${idLabel}</p>
+            <p class="sub">${escapeHtml(found.sekolah || '-')} · ${escapeHtml(found.kota || '-')} · ${idLabel}</p>
           </div>
         </div>
         <div class="seal ${lolos ? 'lolos' : 'tidak'}">
@@ -850,8 +1082,8 @@
             ${iconInfo(iconColor)}
           </div>
           <p style="color:var(--ink);">${lolos
-            ? 'Selamat! Kamu berhak melanjutkan ke tahap berikutnya. Informasi jadwal dan berkas lanjutan akan dikirim melalui sekolah masing-masing.'
-            : 'Terima kasih atas usaha dan semangatmu mengikuti kompetisi ini. Tetap berlatih, ya — masih banyak kesempatan lomba lain di depan!'}</p>
+            ? 'Selamat! Kamu dinyatakan berhak maju ke babak Semifinal KSNR. Informasi jadwal dan petunjuk teknis selanjutnya akan dikirim melalui koordinator sekolah masing-masing.'
+            : 'Terima kasih atas semangat dan perjuanganmu dalam mengikuti KSNR SD. Teruslah belajar dan berlatih sains, jalan prestasimu masih sangat panjang!'}</p>
         </div>
       </div>
     </div>`;
@@ -860,72 +1092,47 @@
   function renderSchoolSummary(sekolahInput, lolosList){
     const header = `
       <div style="text-align:left; padding:18px 0px 6px;">
-        <p style="margin:0 0 4px; font-size:12.5px; font-weight:700; color:var(--blue-600); text-transform:uppercase; letter-spacing:.06em;">Hasil pencarian sekolah</p>
-        <h3 style="margin:0; text-align:left; font-size:17px; color:var(--blue-950);">${lolosList.length} peserta lolos dari "${escapeHtml(sekolahInput)}"</h3>
+        <p style="margin:0 0 4px; font-size:12.5px; font-weight:700; color:var(--blue-600); text-transform:uppercase; letter-spacing:.06em;">Hasil Pencarian Sekolah</p>
+        <h3 style="margin:0; font-size:18px; color:var(--blue-950);">${lolosList.length} peserta lolos dari "${escapeHtml(sekolahInput)}"</h3>
       </div>`;
     const cards = lolosList.map(renderResultCard).join('');
-    return header + `<div style="padding:18px 0px 10px;">${cards}</div>`;
+    return header + `<div style="padding:14px 0px 10px;">${cards}</div>`;
   }
 
-  // ===== PENCARIAN =====
-  function cariPeserta(query, mode){
-    const q = normalizeText(query);
-
-    if(mode === 'nama'){
-      const matches = DATA_PESERTA.filter(p => normalizeText(p.nama).includes(q));
-      // Urutkan: LOLOS dulu, lalu alfabetis
-      matches.sort((a,b)=>{
-        if(a.status === 'LOLOS' && b.status !== 'LOLOS') return -1;
-        if(a.status !== 'LOLOS' && b.status === 'LOLOS') return 1;
-        return String(a.nama).localeCompare(String(b.nama));
-      });
-      return matches;
-    }
-
-    // mode sekolah — hanya peserta LOLOS
-    const matches = DATA_PESERTA.filter(p => normalizeText(p.sekolah).includes(q) && p.status === 'LOLOS');
-    matches.sort((a,b)=> String(a.nama).localeCompare(String(b.nama)) );
-    return matches;
-  }
-
-  // ===== SUBMIT HANDLER =====
-  form.addEventListener('submit', function(e){
+  // ===== SUBMIT PENCARIAN KE SERVER =====
+  form.addEventListener('submit', async function(e){
     e.preventDefault();
-
-    if(!isDataLoaded){
-      resultCard.className = 'result-card-container show';
-      resultCard.innerHTML = renderNotFound(
-        'Data Belum Tersedia', 
-        'Panitia belum merilis file hasil resmi. Silakan pantau halaman ini secara berkala.'
-      );
-      resultCard.scrollIntoView({behavior:'smooth', block:'center'});
-      return;
-    }
 
     const rawQuery = searchInput.value.trim();
     const validation = validateInput(rawQuery);
 
+    if(!validation.valid){
+      resultCard.className = 'result-card-container show';
+      resultCard.innerHTML = renderNotFound('Isi Data Pencarian', escapeHtml(validation.message));
+      resultCard.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.textContent = 'Mencari data…';
 
-    setTimeout(()=>{
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = `Cari Hasil Sekarang
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    try {
+      const isTesting = window.location.hash === '#tes-pencarian-hasil';
+      const testParam = isTesting ? '&test_key=panitiaksnr2026' : '';
 
-      if(!validation.valid){
+      const response = await fetch(`/api/cari?mode=${currentMode}&q=${encodeURIComponent(rawQuery)}${testParam}`);
+      const result = await response.json();
+
+      if (!response.ok) {
         resultCard.className = 'result-card-container show';
-        resultCard.innerHTML = renderNotFound(
-          'Isi Data Pencarian',
-          escapeHtml(validation.message)
-        );
+        resultCard.innerHTML = renderNotFound('Pemberitahuan', escapeHtml(result.message || 'Pencarian tidak dapat diproses.'));
         resultCard.scrollIntoView({behavior:'smooth', block:'center'});
         return;
       }
 
-      const results = cariPeserta(rawQuery, currentMode);
+      const listPeserta = result.data || [];
 
-      if(results.length === 0){
+      if(listPeserta.length === 0){
         resultCard.className = 'result-card-container show';
         resultCard.innerHTML = currentMode === 'nama'
           ? renderNotFound(
@@ -934,7 +1141,7 @@
             )
           : renderNotFound(
               'Belum Ada Peserta yang Lolos',
-              `Tidak ada peserta dari sekolah "${escapeHtml(rawQuery)}" yang dinyatakan lolos pada tahap ini. Periksa kembali ejaan nama sekolah, atau coba cari berdasarkan nama peserta.`
+              `Tidak ada peserta dari sekolah "${escapeHtml(rawQuery)}" yang tercatat lolos babak penyisihan. Coba periksa kembali penulisan nama sekolah atau cari menggunakan nama peserta.`
             );
         resultCard.scrollIntoView({behavior:'smooth', block:'center'});
         return;
@@ -942,17 +1149,25 @@
 
       resultCard.className = 'result-card-container show';
       resultCard.innerHTML = currentMode === 'nama'
-        ? results.map(renderResultCard).join('')
-        : renderSchoolSummary(rawQuery, results);
+        ? listPeserta.map(renderResultCard).join('')
+        : renderSchoolSummary(rawQuery, listPeserta);
       
       resultCard.scrollIntoView({behavior:'smooth', block:'center'});
-    }, 700);
+
+    } catch (err) {
+      resultCard.className = 'result-card-container show';
+      resultCard.innerHTML = renderNotFound('Koneksi Gagal', 'Tidak dapat menghubungi server. Periksa koneksi internet Anda dan coba lagi.');
+      resultCard.scrollIntoView({behavior:'smooth', block:'center'});
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `Cari Hasil Sekarang
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    }
   });
 
-  // ===== HEADER FLOATING GLASS EFFECT =====
+  // Header floating scroll
   const headerEl = document.querySelector('header');
   window.addEventListener('scroll', () => {
-    // Aktifkan mode kapsul jika layar di-scroll lebih dari 20 pixel
     if (window.scrollY > 20) {
       headerEl.classList.add('is-scrolled');
     } else {
@@ -960,8 +1175,11 @@
     }
   });
 
-  // ===== INIT =====
-  loadData();
+  // Dengarkan perubahan hash untuk pengetesan instan panitia
+  window.addEventListener('hashchange', checkSwitchStatus);
+
+  // Inisialisasi status saat halaman dimuat
+  checkSwitchStatus();
 </script>
 </body>
 </html>

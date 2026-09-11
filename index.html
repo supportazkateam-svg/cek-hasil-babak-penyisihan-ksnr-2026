@@ -160,18 +160,21 @@
 
   /* ===== Segmented control ===== */
   .mode-switch{
-    position:relative; display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:5px; margin-bottom:20px; border-radius:100px;
+    position:relative; display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; padding:5px; margin-bottom:20px; border-radius:100px;
     background:linear-gradient(180deg, rgba(225,239,252,.75), rgba(225,239,252,.45)); border:1px solid rgba(255,255,255,.6);
     box-shadow:inset 0 1px 1px rgba(255,255,255,.8), inset 0 -1px 6px rgba(11,79,156,.08), 0 6px 18px -10px rgba(5,34,64,.25);
     backdrop-filter:blur(14px) saturate(160%); -webkit-backdrop-filter:blur(14px) saturate(160%); transition: all 0.3s ease;
   }
   .mode-switch .mode-thumb{
-    position:absolute; top:5px; left:5px; width:calc(50% - 5px); height:calc(100% - 10px); border-radius:100px;
+    position:absolute; top:5px; left:5px; width:calc((100% - 18px) / 3); height:calc(100% - 10px); border-radius:100px;
     background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.72)); border:1px solid rgba(255,255,255,.9);
     box-shadow:0 6px 14px -6px rgba(11,79,156,.35), inset 0 1px 1px rgba(255,255,255,1);
     backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); transition:transform .32s cubic-bezier(.34,1.2,.4,1); pointer-events:none;
   }
-  .mode-switch[data-mode="sekolah"] .mode-thumb{transform:translateX(100%);}
+  .mode-switch[data-mode="nama"] .mode-thumb{transform:translateX(0);}
+  .mode-switch[data-mode="sekolah"] .mode-thumb{transform:translateX(calc(100% + 4px));}
+  .mode-switch[data-mode="wilayah"] .mode-thumb{transform:translateX(calc(200% + 8px));}
+  
   .mode-switch button.mode-opt{
     position:relative; z-index:1; display:flex; align-items:center; justify-content:center; gap:7px;
     background:transparent; border:none; cursor:pointer; padding:11px 14px; border-radius:100px; font-size:13.5px; font-weight:700; color:var(--ink-soft); transition:color .25s ease;
@@ -190,6 +193,18 @@
   .field input:focus{border-color:var(--blue-600); background:var(--white);}
   .field input::placeholder{color:var(--ink-faint);}
   .field-hint{font-size:11.5px; color:var(--ink-faint); margin-top:1px;}
+
+  /* Field Dropdown Status */
+  .field select {
+    border:1.6px solid var(--blue-100); background:var(--blue-50); border-radius:var(--radius-sm); padding:13px 15px; font-size:14.5px;
+    color:var(--ink); outline:none; transition:border-color .15s ease, background .15s ease; font-family:'Inter',sans-serif;
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%230B4F9C%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; cursor: pointer;
+  }
+  .field select:focus {border-color:var(--blue-600); background:var(--white);}
+  .field select:disabled {opacity: 0.7; cursor: not-allowed;}
+
   .lookup-actions{grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; margin-top:6px; flex-wrap:wrap; gap:12px;}
   .btn-primary{
     background:var(--blue-800); color:var(--white); border:none; padding:14px 26px; border-radius:100px; font-weight:700; font-size:14.5px;
@@ -383,7 +398,7 @@
         </div>
         <div>
           <h2>Cari Hasil Peserta <span class="locked-tag" id="statusTag">Memeriksa Server...</span></h2>
-          <p>Pilih mode pencarian: cari berdasarkan nama peserta, atau cari berdasarkan nama sekolah untuk melihat siapa saja yang lolos dari sekolah tersebut.</p>
+          <p>Pilih mode pencarian: cari berdasarkan nama peserta, sekolah, atau wilayah asal. Gunakan filter status jika diperlukan.</p>
         </div>
       </div>
 
@@ -399,16 +414,29 @@
 
       <div class="mode-switch is-locked" id="modeSwitch" data-mode="nama">
         <div class="mode-thumb"></div>
-        <button type="button" class="mode-opt is-active" id="modeNama" data-mode="nama" disabled>Nama Peserta</button>
-        <button type="button" class="mode-opt" id="modeSekolah" data-mode="sekolah" disabled>Nama Sekolah</button>
+        <button type="button" class="mode-opt is-active" id="modeNama" data-mode="nama" disabled>Peserta</button>
+        <button type="button" class="mode-opt" id="modeSekolah" data-mode="sekolah" disabled>Sekolah</button>
+        <button type="button" class="mode-opt" id="modeWilayah" data-mode="wilayah" disabled>Wilayah</button>
       </div>
 
       <form class="lookup-form is-locked" id="lookupForm">
-        <div class="field" style="grid-column:1 / -1;">
+        <!-- Field Nama/Query -->
+        <div class="field" id="searchFieldContainer" style="grid-column:1 / -1;">
           <label for="searchInput" id="searchLabel">Nama Peserta</label>
           <input id="searchInput" type="text" placeholder="Contoh: Ahmad Fauzan Ramadhan" autocomplete="off" disabled>
           <span class="field-hint" id="searchHint">Sesuai nama yang terdaftar</span>
         </div>
+        
+        <!-- Field Filter Kelolosan -->
+        <div class="field filter-container" id="statusFilterContainer" style="display:none; grid-column:span 1;">
+          <label for="statusFilter">Status Kelolosan</label>
+          <select id="statusFilter" disabled>
+            <option value="semua">Semua Status</option>
+            <option value="lolos">Dinyatakan Lolos</option>
+            <option value="tidak_lolos">Belum Lolos</option>
+          </select>
+        </div>
+
         <div class="lookup-actions">
           <span class="lookup-note">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8AA1BC" stroke-width="1.6"/><path d="M12 11v5M12 8v.01" stroke="#8AA1BC" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -438,9 +466,9 @@
         </div>
         <h3>Cara Melihat Hasil</h3>
         <ol>
-          <li>Pilih mode "Nama Peserta" atau "Nama Sekolah"</li>
-          <li>Ketik nama sesuai mode yang dipilih</li>
-          <li>Tekan tombol "Cari Hasil Sekarang"</li>
+          <li>Pilih mode pencarian (Peserta/Sekolah/Wilayah)</li>
+          <li>Gunakan filter kelolosan jika diperlukan</li>
+          <li>Ketik nama lalu tekan "Cari Hasil Sekarang"</li>
         </ol>
       </div>
       <div class="info-card">
@@ -448,7 +476,7 @@
           <svg width="42" height="42" viewBox="0 0 42 42" fill="none"><rect width="42" height="42" rx="12" fill="#E1EFFC"/><path d="M13 29V17l8-6 8 6v12" stroke="#0B4F9C" stroke-width="2" stroke-linejoin="round"/><path d="M17 29v-7h8v7" stroke="#0B4F9C" stroke-width="2"/></svg>
         </div>
         <h3>Jika Belum Ditemukan</h3>
-        <p>Periksa kembali ejaan nama dan nama sekolah. Jika data tetap tidak ditemukan, hubungi panitia melalui kontak resmi di bagian bawah halaman.</p>
+        <p>Periksa kembali ejaan nama, asal sekolah atau wilayah. Jika data tetap tidak ditemukan, hubungi panitia melalui kontak resmi di bagian bawah halaman.</p>
       </div>
       <div class="info-card">
         <div class="icon-box">
@@ -541,9 +569,16 @@
   const modeSwitch = document.getElementById('modeSwitch');
   const modeNamaBtn = document.getElementById('modeNama');
   const modeSekolahBtn = document.getElementById('modeSekolah');
+  const modeWilayahBtn = document.getElementById('modeWilayah');
+  
   const searchInput = document.getElementById('searchInput');
   const searchLabel = document.getElementById('searchLabel');
   const searchHint = document.getElementById('searchHint');
+  const searchFieldContainer = document.getElementById('searchFieldContainer');
+  
+  const statusFilter = document.getElementById('statusFilter');
+  const statusFilterContainer = document.getElementById('statusFilterContainer');
+  
   const lockedBanner = document.getElementById('lockedBanner');
   const statusTag = document.getElementById('statusTag');
   const heroStatusPill = document.getElementById('heroStatusPill');
@@ -552,7 +587,8 @@
 
   const MODE_COPY = {
     nama: { label: 'Nama Peserta', placeholder: 'Contoh: Ahmad Fauzan', hint: 'Minimal 2 karakter' },
-    sekolah: { label: 'Nama Sekolah', placeholder: 'Contoh: SDN 01 Pare', hint: 'Mencari peserta lolos dari sekolah ini' }
+    sekolah: { label: 'Nama Sekolah', placeholder: 'Contoh: SDN 01 Pare', hint: 'Mencari peserta dari sekolah ini' },
+    wilayah: { label: 'Nama Wilayah', placeholder: 'Contoh: Balikpapan', hint: 'Mencari peserta dari wilayah ini' }
   };
 
   function escapeHtml(str){
@@ -583,7 +619,7 @@
         // UNLOCK UI
         form.classList.remove('is-locked');
         modeSwitch.classList.remove('is-locked');
-        [modeNamaBtn, modeSekolahBtn, searchInput, submitBtn].forEach(el => el.disabled = false);
+        [modeNamaBtn, modeSekolahBtn, modeWilayahBtn, searchInput, statusFilter, submitBtn].forEach(el => el.disabled = false);
         lockedBanner.style.display = 'none';
         
         statusTag.textContent = data.is_test_mode ? 'Mode Tes Aktif' : 'Telah Dibuka';
@@ -593,7 +629,6 @@
         heroStatusPill.classList.add('is-active-state');
         heroStatusText.textContent = 'Data pengumuman resmi telah rilis dan tersedia';
 
-        // Tampilkan Modal hanya 1 kali per sesi browser
         if (!sessionStorage.getItem('pengumumanModalSeen')) {
           setTimeout(showModal, 300);
           sessionStorage.setItem('pengumumanModalSeen', 'true');
@@ -606,7 +641,7 @@
       // LOCK UI (Fallback / Sistem Dimatikan)
       form.classList.add('is-locked');
       modeSwitch.classList.add('is-locked');
-      [modeNamaBtn, modeSekolahBtn, searchInput, submitBtn].forEach(el => el.disabled = true);
+      [modeNamaBtn, modeSekolahBtn, modeWilayahBtn, searchInput, statusFilter, submitBtn].forEach(el => el.disabled = true);
       lockedBanner.style.display = 'flex';
       
       statusTag.textContent = 'Terkunci';
@@ -627,13 +662,26 @@
     modeSwitch.setAttribute('data-mode', mode);
     modeNamaBtn.classList.toggle('is-active', mode === 'nama');
     modeSekolahBtn.classList.toggle('is-active', mode === 'sekolah');
+    modeWilayahBtn.classList.toggle('is-active', mode === 'wilayah');
+    
     searchLabel.textContent = MODE_COPY[mode].label;
     searchInput.placeholder = MODE_COPY[mode].placeholder;
     searchHint.textContent = MODE_COPY[mode].hint;
+    
+    // Toggle dropdown filter kelolosan
+    if(mode === 'nama') {
+      searchFieldContainer.style.gridColumn = '1 / -1';
+      statusFilterContainer.style.display = 'none';
+    } else {
+      searchFieldContainer.style.gridColumn = 'span 1';
+      statusFilterContainer.style.display = 'flex';
+    }
+
     searchInput.value = ''; resultCard.innerHTML = ''; resultCard.classList.remove('show');
   }
   modeNamaBtn.addEventListener('click', ()=> setMode('nama'));
   modeSekolahBtn.addEventListener('click', ()=> setMode('sekolah'));
+  modeWilayahBtn.addEventListener('click', ()=> setMode('wilayah'));
 
   // ===== RENDER UI =====
   function iconCheck(){ return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
@@ -649,6 +697,7 @@
   function renderResultCard(found){
     const lolos = String(found.status || '').toUpperCase() === 'LOLOS';
     const initials = String(found.nama).split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const wilayahText = found.wilayah ? `${escapeHtml(found.wilayah)} · ` : '';
     return `
     <div style="background:var(--white); border-radius:var(--radius-lg); border:1px solid var(--blue-100); box-shadow:var(--shadow-card); overflow:hidden; margin-bottom: 24px;">
       <div class="result-top">
@@ -656,7 +705,7 @@
           <div class="avatar-ring">${escapeHtml(initials)}</div>
           <div>
             <p class="name">${escapeHtml(found.nama)}</p>
-            <p class="sub">${escapeHtml(found.sekolah)} · No. ${escapeHtml(found.no)}</p>
+            <p class="sub">${escapeHtml(found.sekolah)} · ${wilayahText}No. ${escapeHtml(found.no)}</p>
           </div>
         </div>
         <div class="seal ${lolos ? 'lolos' : 'tidak'}">
@@ -677,7 +726,15 @@
 
     try {
       const isTestHash = window.location.hash === '#tes-pencarian-hasil';
-      const url = `${API_URL}?mode=${currentMode}&q=${encodeURIComponent(query)}${isTestHash ? `&test_key=${TEST_KEY}` : ''}`;
+      
+      // Susun URL API dengan menambahkan parameter filter
+      let url = `${API_URL}?mode=${currentMode}&q=${encodeURIComponent(query)}`;
+      if (currentMode !== 'nama') {
+        url += `&status=${statusFilter.value}`; // Passing ke backend
+      }
+      if (isTestHash) {
+        url += `&test_key=${TEST_KEY}`;
+      }
       
       const res = await fetch(url);
       const data = await res.json();
@@ -686,14 +743,34 @@
 
       if (!data.success) {
         resultCard.innerHTML = renderNotFound('Terjadi Kendala', escapeHtml(data.message));
-      } else if (data.data.length === 0) {
-        resultCard.innerHTML = renderNotFound('Data Tidak Ditemukan', 'Periksa kembali ejaan nama atau sekolah.');
       } else {
-        if (currentMode === 'sekolah') {
-          const header = `<div style="padding:18px 0 6px;"><h3 style="margin:0; font-size:17px; color:var(--blue-950);">${data.total_found} peserta lolos dari "${escapeHtml(query)}"</h3></div>`;
-          resultCard.innerHTML = header + `<div style="padding:10px 0;">${data.data.map(renderResultCard).join('')}</div>`;
+        
+        // Frontend filtering bertindak sebagai perisai ganda apabila backend me-return semua status data 
+        let displayData = data.data || [];
+        if (currentMode !== 'nama' && statusFilter.value !== 'semua') {
+          const filterVal = statusFilter.value;
+          displayData = displayData.filter(item => {
+             const statusText = String(item.status || '').toUpperCase();
+             if (filterVal === 'lolos') return statusText === 'LOLOS';
+             if (filterVal === 'tidak_lolos') return statusText !== 'LOLOS';
+             return true;
+          });
+        }
+
+        if (displayData.length === 0) {
+          resultCard.innerHTML = renderNotFound('Data Tidak Ditemukan', 'Tidak ada data peserta atau periksa kembali ejaan pencarian Anda.');
         } else {
-          resultCard.innerHTML = data.data.map(renderResultCard).join('');
+          if (currentMode === 'sekolah' || currentMode === 'wilayah') {
+            
+            let filterLabel = "";
+            if(statusFilter.value === 'lolos') filterLabel = " lolos";
+            if(statusFilter.value === 'tidak_lolos') filterLabel = " belum lolos";
+
+            const header = `<div style="padding:18px 0 6px;"><h3 style="margin:0; font-size:17px; color:var(--blue-950);">${displayData.length} peserta${filterLabel} dari "${escapeHtml(query)}"</h3></div>`;
+            resultCard.innerHTML = header + `<div style="padding:10px 0;">${displayData.map(renderResultCard).join('')}</div>`;
+          } else {
+            resultCard.innerHTML = displayData.map(renderResultCard).join('');
+          }
         }
       }
     } catch(err) {

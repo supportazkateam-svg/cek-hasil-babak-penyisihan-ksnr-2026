@@ -62,7 +62,7 @@ function loadPesertaData() {
         const rawContent = fs.readFileSync(filePath, 'utf-8');
         const parsed = JSON.parse(rawContent);
         DATA_PESERTA = Array.isArray(parsed) ? parsed : (parsed.data || []);
-        console.log(`[Success] Berhasil memuat ${DATA_PESERTA.length} peserta dari: ${filePath}`);
+        console.log(`[Success] Berhasil memuat ${DATA_PESERTA.length} peserta dari:${filePath}`);
         return DATA_PESERTA;
       } catch (err) {
         console.error(`[Error JSON] Gagal membaca ${filePath}:`, err.message);
@@ -102,7 +102,8 @@ module.exports = (req, res) => {
   }
 
   try {
-    const { mode = 'nama', q = '', test_key = '', check_status = 'false' } = req.query;
+    // Menangkap parameter dari frontend termasuk status
+    const { mode = 'nama', q = '', status = 'semua', test_key = '', check_status = 'false' } = req.query;
 
     const isSystemOn = getSwitchStatus();
     const isTesting = test_key === SECRET_TEST_KEY;
@@ -131,9 +132,7 @@ module.exports = (req, res) => {
       return res.status(400).json({
         success: false,
         status: 'invalid_query',
-        message: mode === 'nama'
-          ? 'Masukkan minimal 2 karakter nama peserta.'
-          : 'Masukkan minimal 2 karakter nama sekolah.'
+        message: 'Masukkan minimal 2 karakter untuk pencarian.'
       });
     }
 
@@ -156,34 +155,39 @@ module.exports = (req, res) => {
     }
 
     const queryNorm = normalizeText(rawQuery);
-    let hasil = [];
-
-    // --- FITUR 4: PROSES PENCARIAN & SORTING ---
-    if (mode === 'sekolah') {
-      // Mode Sekolah: hanya tampilkan peserta yang LOLOS
-      hasil = daftarPeserta.filter(p => {
-        const sekolahNorm = normalizeText(p.sekolah);
+    
+    // --- FITUR 4: PROSES PENCARIAN & FILTERING ---
+    let hasil = daftarPeserta.filter(p => {
+      // 1. Filter Status Kelolosan
+      if (status !== 'semua') {
         const isLolos = String(p.status || '').toUpperCase() === 'LOLOS';
-        return sekolahNorm.includes(queryNorm) && isLolos;
-      });
+        if (status === 'lolos' && !isLolos) return false;
+        if (status === 'tidak_lolos' && isLolos) return false;
+      }
 
-      // Urutkan alfabetis nama peserta
-      hasil.sort((a, b) => String(a.nama || '').localeCompare(String(b.nama || '')));
-    } else {
-      // Mode Nama: tampilkan semua yang cocok, prioritas LOLOS di urutan atas
-      hasil = daftarPeserta.filter(p => {
-        const namaNorm = normalizeText(p.nama);
-        return namaNorm.includes(queryNorm);
-      });
+      // 2. Filter Teks Berdasarkan Mode
+      if (mode === 'sekolah') {
+        return normalizeText(p.sekolah).includes(queryNorm);
+      } else if (mode === 'wilayah') {
+        return normalizeText(p.wilayah).includes(queryNorm);
+      } else { 
+        // Default mode = 'nama'
+        return normalizeText(p.nama).includes(queryNorm);
+      }
+    });
 
-      hasil.sort((a, b) => {
-        const aLolos = String(a.status || '').toUpperCase() === 'LOLOS';
-        const bLolos = String(b.status || '').toUpperCase() === 'LOLOS';
-        if (aLolos && !bLolos) return -1;
-        if (!aLolos && bLolos) return 1;
-        return String(a.nama || '').localeCompare(String(b.nama || ''));
-      });
-    }
+    // --- FITUR 5: SORTING ---
+    hasil.sort((a, b) => {
+      const aLolos = String(a.status || '').toUpperCase() === 'LOLOS';
+      const bLolos = String(b.status || '').toUpperCase() === 'LOLOS';
+      
+      // Prioritaskan yang LOLOS di atas
+      if (aLolos && !bLolos) return -1;
+      if (!aLolos && bLolos) return 1;
+      
+      // Urutkan berdasarkan nama (alfabetis)
+      return String(a.nama || '').localeCompare(String(b.nama || ''));
+    });
 
     // Batasi output data maksimal 50 baris
     return res.status(200).json({

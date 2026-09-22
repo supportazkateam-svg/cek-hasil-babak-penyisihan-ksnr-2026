@@ -299,14 +299,14 @@
     background:var(--blue-900);
     background-image:radial-gradient(circle at 10% 0%, rgba(59,138,224,.35), transparent 50%);
     border-radius:var(--radius-lg); padding:34px 36px; display:grid;
-    grid-template-columns:repeat(4,1fr); gap:20px; position:relative; overflow:hidden;
+    grid-template-columns:repeat(5,1fr); gap:20px; position:relative; overflow:hidden;
   }
   .timeline-card::after{
     content:""; position:absolute; right:-60px; bottom:-90px; width:260px;height:260px;
     border-radius:50%; border:38px solid rgba(255,255,255,.045);
   }
   .tl-item{position:relative; z-index:1;}
-  .tl-item .tl-index{font-size:12px; font-weight:800; color:var(--blue-300); letter-spacing:.08em; margin:0 0 10px;}
+  .tl-item .tl-index{font-size:12px; font-weight:800; color:var(--blue-200); letter-spacing:.08em; margin:0 0 10px;}
   .tl-item .tl-date{color:var(--white); font-weight:800; font-size:15px; margin:0 0 4px;}
   .tl-item .tl-desc{color:var(--blue-200); font-size:12.5px; line-height:1.55; margin:0;}
   .tl-item:not(:last-child){border-right:1px solid rgba(255,255,255,.1); padding-right:18px;}
@@ -507,6 +507,11 @@
       </div>
       <div class="tl-item">
         <p class="tl-index">TAHAP 04</p>
+        <p class="tl-date">30 Sep 2026</p>
+        <p class="tl-desc">Pengumuman hasil babak semifinal KSNR 8</p>
+      </div>
+      <div class="tl-item">
+        <p class="tl-index">TAHAP 05</p>
         <p class="tl-date">18 Okt 2026</p>
         <p class="tl-desc">Babak final KSNR</p>
       </div>

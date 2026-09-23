@@ -423,7 +423,7 @@
         <!-- Field Nama/Query -->
         <div class="field" id="searchFieldContainer" style="grid-column:1 / -1;">
           <label for="searchInput" id="searchLabel">Nama Peserta</label>
-          <input id="searchInput" type="text" placeholder="Contoh: Ahmad Fauzan Ramadhan" autocomplete="off" disabled>
+          <input id="searchInput" type="text" placeholder="Contoh: Ahmad Fauzan" autocomplete="off" disabled>
           <span class="field-hint" id="searchHint">Sesuai nama yang terdaftar</span>
         </div>
         
@@ -564,7 +564,7 @@
 <script>
   // ===== KONFIGURASI API BACKEND =====
   const API_URL = '/api/cari';
-  const TEST_KEY = 'panitiaksnr2026';
+  const DEFAULT_TEST_KEY = 'panitiaksnr2026';
   let currentMode = 'nama';
 
   // Elemen DOM
@@ -600,23 +600,40 @@
     return String(str ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[ch]));
   }
 
+  // FUNGSI PERSISTENSI KUNCI UJI COBA PANITIA
+  function getActiveTestKey() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryKey = urlParams.get('test_key');
+    if (queryKey) {
+      sessionStorage.setItem('ksnr_test_key', queryKey);
+      return queryKey;
+    }
+    if (window.location.hash === '#tes-pencarian-hasil') {
+      sessionStorage.setItem('ksnr_test_key', DEFAULT_TEST_KEY);
+      return DEFAULT_TEST_KEY;
+    }
+    return sessionStorage.getItem('ksnr_test_key') || '';
+  }
+
   // FUNGSI MODAL
   function showModal() {
     modalOverlay.classList.add('show');
   }
   function closeModal() {
     modalOverlay.classList.remove('show');
-    searchInput.focus();
+    if (!searchInput.disabled) {
+      searchInput.focus();
+    }
   }
 
   // ===== CEK STATUS SAKLAR DARI BACKEND =====
   async function checkServerStatus() {
     try {
-      const isTestHash = window.location.hash === '#tes-pencarian-hasil';
-      const testParam = isTestHash ? `&test_key=${TEST_KEY}` : '';
+      const activeTestKey = getActiveTestKey();
+      const testParam = activeTestKey ? `&test_key=${encodeURIComponent(activeTestKey)}` : '';
       
       const res = await fetch(`${API_URL}?check_status=true${testParam}`);
-      if (!res.ok) throw new Error('Backend tidak merespons');
+      if (!res.ok && res.status !== 403) throw new Error('Backend tidak merespons');
       
       const data = await res.json();
       
@@ -628,13 +645,22 @@
         lockedBanner.style.display = 'none';
         
         statusTag.textContent = data.is_test_mode ? 'Mode Tes Aktif' : 'Telah Dibuka';
-        statusTag.style.background = '#DFF3E3'; statusTag.style.color = '#1B7A3D';
+        statusTag.style.background = '#DFF3E3'; 
+        statusTag.style.color = '#1B7A3D';
         submitBtn.innerHTML = `Cari Hasil Sekarang <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-left:6px;"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         
         heroStatusPill.classList.add('is-active-state');
-        heroStatusText.textContent = 'Data pengumuman resmi telah rilis dan tersedia';
+        heroStatusText.textContent = data.is_test_mode 
+          ? 'Sistem dalam mode pengujian panitia' 
+          : 'Data pengumuman resmi telah rilis dan tersedia';
 
         if (!sessionStorage.getItem('pengumumanModalSeen')) {
+          const modalTitle = document.querySelector('.modal-title');
+          const modalDesc = document.querySelector('.modal-desc');
+          if (data.is_test_mode && modalTitle && modalDesc) {
+            modalTitle.textContent = 'Mode Pengujian Panitia';
+            modalDesc.textContent = 'Fitur pencarian hasil babak semifinal KSNR SD 2026 dibuka khusus untuk pengujian panitia.';
+          }
           setTimeout(showModal, 300);
           sessionStorage.setItem('pengumumanModalSeen', 'true');
         }
@@ -650,7 +676,8 @@
       lockedBanner.style.display = 'flex';
       
       statusTag.textContent = 'Terkunci';
-      statusTag.style.background = 'var(--blue-100)'; statusTag.style.color = 'var(--blue-800)';
+      statusTag.style.background = 'var(--blue-100)'; 
+      statusTag.style.color = 'var(--blue-800)';
       submitBtn.innerHTML = 'Menunggu Server';
       
       heroStatusPill.classList.remove('is-active-state');
@@ -658,8 +685,12 @@
     }
   }
 
-  // Event listener hash untuk ganti mode instan
-  window.addEventListener('hashchange', checkServerStatus);
+  // Event listener hash hanya jika sengaja mengakses hash mode tes
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#tes-pencarian-hasil') {
+      checkServerStatus();
+    }
+  });
 
   // ===== MODE SWITCHER =====
   function setMode(mode){
@@ -682,7 +713,9 @@
       statusFilterContainer.style.display = 'flex';
     }
 
-    searchInput.value = ''; resultCard.innerHTML = ''; resultCard.classList.remove('show');
+    searchInput.value = ''; 
+    resultCard.innerHTML = ''; 
+    resultCard.classList.remove('show');
   }
   modeNamaBtn.addEventListener('click', ()=> setMode('nama'));
   modeSekolahBtn.addEventListener('click', ()=> setMode('sekolah'));
@@ -701,10 +734,31 @@
 
   function renderResultCard(found){
     const lolos = String(found.status || '').toUpperCase() === 'LOLOS';
-    const initials = String(found.nama).split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
-    const wilayahText = found.wilayah ? `${escapeHtml(found.wilayah)} · ` : '';
-    // Tambahkan ID Peserta jika tersedia, jika tidak tampilkan Nomor
-    const idAtauNo = found.id_peserta ? `ID: ${escapeHtml(found.id_peserta)}` : `No: ${escapeHtml(found.no)}`;
+    
+    // Bersihkan karakter tak kasat mata (zero-width / word joiner) untuk inisial yang tepat
+    const cleanNama = String(found.nama || '')
+      .replace(/[\u200B-\u200D\uFEFF\u2060]/g, '')
+      .trim();
+    const words = cleanNama.split(/\s+/).filter(Boolean);
+    const initials = words.slice(0, 2).map(w => {
+      const cleanWord = w.replace(/^[^\p{L}\p{N}]+/u, '');
+      return cleanWord ? cleanWord[0] : (w[0] || '');
+    }).join('').toUpperCase() || 'P';
+
+    // Format metadata sekolah, wilayah, dan kelas tanpa tanda pemisah gantung
+    const metaParts = [];
+    if (found.sekolah) metaParts.push(escapeHtml(found.sekolah));
+    if (found.wilayah) metaParts.push(escapeHtml(found.wilayah));
+    if (found.kelas) metaParts.push(`Kelas ${escapeHtml(found.kelas)}`);
+    const metaText = metaParts.join(' · ');
+
+    // Badge ID atau Nomor Peserta (jika tersedia)
+    let idBadge = '';
+    if (found.id_peserta) {
+      idBadge = `<span style="display:inline-block; padding: 2px 8px; background: rgba(255,255,255,0.15); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">ID: ${escapeHtml(found.id_peserta)}</span>`;
+    } else if (found.no) {
+      idBadge = `<span style="display:inline-block; padding: 2px 8px; background: rgba(255,255,255,0.15); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">No: ${escapeHtml(found.no)}</span>`;
+    }
     
     return `
     <div style="background:var(--white); border-radius:var(--radius-lg); border:1px solid var(--blue-100); box-shadow:var(--shadow-card); overflow:hidden; margin-bottom: 24px;">
@@ -712,13 +766,9 @@
         <div class="who">
           <div class="avatar-ring">${escapeHtml(initials)}</div>
           <div>
-            <p class="name">${escapeHtml(found.nama)}</p>
-            <p class="sub" style="margin-bottom: 3px;">${escapeHtml(found.sekolah)} · ${wilayahText}</p>
-            <p class="sub" style="font-size: 11.5px; opacity: 0.9;">
-              <span style="display:inline-block; padding: 2px 8px; background: rgba(255,255,255,0.15); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
-                ${idAtauNo}
-              </span>
-            </p>
+            <p class="name">${escapeHtml(cleanNama)}</p>
+            ${metaText ? `<p class="sub" style="margin-bottom: 3px;">${metaText}</p>` : ''}
+            ${idBadge ? `<p class="sub" style="font-size: 11.5px; opacity: 0.9; margin: 4px 0 0;">${idBadge}</p>` : ''}
           </div>
         </div>
         <div class="seal ${lolos ? 'lolos' : 'tidak'}">
@@ -733,33 +783,48 @@
   form.addEventListener('submit', async function(e){
     e.preventDefault();
     const query = searchInput.value.trim();
-    if(query.length < 2) return;
+    
+    // Validasi karakter bersih minimal 2 karakter alfanumerik
+    const cleanCheck = query.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()'"\u200B-\u200D\uFEFF\u2060]/g, '').trim();
+    if(cleanCheck.length < 2) {
+      resultCard.className = 'result-card-container show';
+      resultCard.innerHTML = renderNotFound('Pencarian Terlalu Pendek', 'Silakan masukkan minimal 2 huruf atau angka yang valid untuk mencari hasil.');
+      resultCard.scrollIntoView({behavior:'smooth', block:'start'});
+      searchInput.focus();
+      return;
+    }
 
-    submitBtn.disabled = true; submitBtn.textContent = 'Mencari...';
+    submitBtn.disabled = true; 
+    submitBtn.textContent = 'Mencari...';
 
     try {
-      const isTestHash = window.location.hash === '#tes-pencarian-hasil';
+      const activeTestKey = getActiveTestKey();
       
       // Susun URL API dengan menambahkan parameter filter
-      let url = `${API_URL}?mode=${currentMode}&q=${encodeURIComponent(query)}`;
+      let url = `${API_URL}?mode=${encodeURIComponent(currentMode)}&q=${encodeURIComponent(query)}`;
       if (currentMode !== 'nama') {
-        url += `&status=${statusFilter.value}`; // Passing ke backend
+        url += `&status=${encodeURIComponent(statusFilter.value)}`;
       }
-      if (isTestHash) {
-        url += `&test_key=${TEST_KEY}`;
+      if (activeTestKey) {
+        url += `&test_key=${encodeURIComponent(activeTestKey)}`;
       }
       
       const res = await fetch(url);
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch(parseErr) {
+        throw new Error('Respon server tidak valid');
+      }
 
       resultCard.className = 'result-card-container show';
 
       if (!data.success) {
-        resultCard.innerHTML = renderNotFound('Terjadi Kendala', escapeHtml(data.message));
+        resultCard.innerHTML = renderNotFound('Terjadi Kendala', escapeHtml(data.message || 'Pencarian tidak dapat diproses.'));
       } else {
-        
-        // Frontend filtering bertindak sebagai perisai ganda apabila backend me-return semua status data 
         let displayData = data.data || [];
+        
+        // Frontend filtering sebagai perisai ganda
         if (currentMode !== 'nama' && statusFilter.value !== 'semua') {
           const filterVal = statusFilter.value;
           displayData = displayData.filter(item => {
@@ -771,15 +836,20 @@
         }
 
         if (displayData.length === 0) {
-          resultCard.innerHTML = renderNotFound('Data Tidak Ditemukan', 'Tidak ada data peserta atau periksa kembali ejaan pencarian Anda.');
+          resultCard.innerHTML = renderNotFound('Data Tidak Ditemukan', 'Tidak ada data peserta yang cocok atau periksa kembali ejaan pencarian Anda.');
         } else {
           if (currentMode === 'sekolah' || currentMode === 'wilayah') {
-            
             let filterLabel = "";
             if(statusFilter.value === 'lolos') filterLabel = " lolos";
             if(statusFilter.value === 'tidak_lolos') filterLabel = " belum lolos";
 
-            const header = `<div style="padding:18px 0 6px;"><h3 style="margin:0; font-size:17px; color:var(--blue-950);">${displayData.length} peserta${filterLabel} dari "${escapeHtml(query)}"</h3></div>`;
+            const totalFound = data.total_found || displayData.length;
+            let countSummary = `${displayData.length} peserta`;
+            if (totalFound > displayData.length) {
+              countSummary = `Menampilkan ${displayData.length} dari ${totalFound} peserta`;
+            }
+
+            const header = `<div style="padding:18px 0 6px;"><h3 style="margin:0; font-size:17px; color:var(--blue-950);">${countSummary}${filterLabel} dari "${escapeHtml(query)}"</h3></div>`;
             resultCard.innerHTML = header + `<div style="padding:10px 0;">${displayData.map(renderResultCard).join('')}</div>`;
           } else {
             resultCard.innerHTML = displayData.map(renderResultCard).join('');
@@ -788,17 +858,19 @@
       }
     } catch(err) {
       resultCard.className = 'result-card-container show';
-      resultCard.innerHTML = renderNotFound('Koneksi Gagal', 'Gagal menghubungi server pencarian.');
+      resultCard.innerHTML = renderNotFound('Koneksi Gagal', 'Gagal menghubungi server pencarian. Pastikan koneksi internet stabil.');
     } finally {
       submitBtn.disabled = false; 
       submitBtn.innerHTML = `Cari Hasil Sekarang <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-left:6px;"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-      resultCard.scrollIntoView({behavior:'smooth', block:'center'});
+      resultCard.scrollIntoView({behavior:'smooth', block:'start'});
     }
   });
 
   // ===== EFEK HEADER MELAYANG =====
   const headerEl = document.querySelector('header');
-  window.addEventListener('scroll', () => { window.scrollY > 20 ? headerEl.classList.add('is-scrolled') : headerEl.classList.remove('is-scrolled'); });
+  window.addEventListener('scroll', () => { 
+    window.scrollY > 20 ? headerEl.classList.add('is-scrolled') : headerEl.classList.remove('is-scrolled'); 
+  });
 
   // Init Status
   checkServerStatus();
